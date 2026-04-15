@@ -104,21 +104,18 @@
 
         /* Month tabs */
         .month-tabs {
-            display: flex;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
             gap: 6px;
-            overflow-x: auto;
-            padding-bottom: 2px;
-            scrollbar-width: none;
         }
-        .month-tabs::-webkit-scrollbar { display: none; }
         .month-tab {
-            flex-shrink: 0;
-            padding: 7px 15px;
-            border-radius: 20px;
-            font-size: 0.8rem;
+            padding: 7px 4px;
+            border-radius: 12px;
+            font-size: 0.78rem;
             font-weight: 700;
             cursor: pointer;
             border: none;
+            text-align: center;
             transition: all 0.18s;
             background: rgba(30,122,62,0.1);
             color: #2D6A4A;
