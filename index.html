@@ -508,9 +508,22 @@
                     className: 'card-base card-surface fade-up',
                     style: { animationDelay: '0.2s' }
                 },
-                    React.createElement('p', { style: { fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase', color: '#6A9A7A', marginBottom: 6 } }, 'Остаток за ' + mn),
-                    React.createElement('p', { style: { fontSize: '2rem', fontWeight: 900, color: totals.bal >= 0 ? '#1E7A3E' : '#C44008' } },
-                        totals.bal < 0 ? '−' : '', fmt(totals.bal), '\u00a0₽')
+                    React.createElement('p', { style: { fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase', color: '#6A9A7A', marginBottom: 12 } }, 'Итоги за ' + mn),
+                    React.createElement('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 } },
+                        React.createElement('div', { style: { background: '#F0FBF0', borderRadius: 12, padding: '12px 14px' } },
+                            React.createElement('p', { style: { fontSize: '0.62rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#5A9A70', marginBottom: 4 } }, 'Доходы'),
+                            React.createElement('p', { style: { fontWeight: 900, fontSize: '1.1rem', color: '#1E7A3E' } }, fmt(totals.inc), '\u00a0₽')
+                        ),
+                        React.createElement('div', { style: { background: '#FFF5F0', borderRadius: 12, padding: '12px 14px' } },
+                            React.createElement('p', { style: { fontSize: '0.62rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#B06040', marginBottom: 4 } }, 'Расходы'),
+                            React.createElement('p', { style: { fontWeight: 900, fontSize: '1.1rem', color: '#E8560A' } }, fmt(totals.exp), '\u00a0₽')
+                        )
+                    ),
+                    React.createElement('div', { style: { borderTop: '1px solid #E8F0E8', paddingTop: 12 } },
+                        React.createElement('p', { style: { fontSize: '0.62rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#6A9A7A', marginBottom: 4 } }, 'Остаток'),
+                        React.createElement('p', { style: { fontSize: '2rem', fontWeight: 900, color: totals.bal >= 0 ? '#1E7A3E' : '#C44008' } },
+                            totals.bal < 0 ? '−' : '', fmt(totals.bal), '\u00a0₽')
+                    )
                 ),
 
                 // ── Annual Report ──
