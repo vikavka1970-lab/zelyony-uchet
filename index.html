@@ -173,6 +173,31 @@
             transition: background 0.15s;
         }
         .btn-clear:hover { background: rgba(232,86,10,0.06); }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            padding: 12px 20px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            animation: toastIn 0.25s cubic-bezier(.2,.8,.4,1) both;
+            white-space: nowrap;
+        }
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(12px); }
+            to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        .toast-income { background: #1E7A3E; color: white; }
+        .toast-expense { background: #E8560A; color: white; }
     </style>
 </head>
 <body>
@@ -329,6 +354,12 @@
             const [expCat,    setExpCat]    = useState(EXPENSE_CATS[0]);
             const [expNote,   setExpNote]   = useState('');
             const [showSettings, setShowSettings] = useState(false);
+            const [toast, setToast] = useState(null);
+
+            const showToast = (type, amount) => {
+                setToast({ type, amount });
+                setTimeout(() => setToast(null), 2000);
+            };
 
             useEffect(() => { localStorage.setItem(KEY, JSON.stringify(transactions)); }, [transactions]);
 
@@ -346,6 +377,7 @@
                     date: d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' }),
                     timestamp: d.getTime()
                 }, ...prev]);
+                showToast(type, amount);
                 if (type === 'income') { setIncAmount(''); setIncNote(''); }
                 else                   { setExpAmount(''); setExpNote(''); }
             }, [incAmount, expAmount, incCat, expCat, incNote, expNote, year, month]);
@@ -565,7 +597,16 @@
                 // ── Settings Modal ──
                 showSettings && React.createElement(SettingsModal, {
                     transactions, setTransactions, onClose: () => setShowSettings(false)
-                })
+                }),
+
+                // ── Toast ──
+                toast && React.createElement('div', {
+                    key: toast.amount + toast.type,
+                    className: 'toast ' + (toast.type === 'income' ? 'toast-income' : 'toast-expense')
+                },
+                    toast.type === 'income' ? '✓ Доход добавлен: +' : '✓ Расход добавлен: −',
+                    fmt(toast.amount), '\u00a0₽'
+                )
             );
         }
 
