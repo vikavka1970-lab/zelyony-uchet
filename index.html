@@ -1,182 +1,493 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" translate="no">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Зелёный Учёт — Калькулятор мастера</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="google" content="notranslate" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Зелёный Учёт">
+    <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/240/leaf.png">
+    <title>Зелёный Учёт</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0c1f14;
+            min-height: 100vh;
+        }
         .font-serif { font-family: 'Playfair Display', serif; }
         input[type="number"]::-webkit-inner-spin-button,
         input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type="number"] { -moz-appearance: textfield; }
+        .glass {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glass-income {
+            background: rgba(26, 60, 52, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(163, 230, 53, 0.2);
+        }
+        .glass-expense {
+            background: rgba(120, 50, 20, 0.65);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(251, 146, 60, 0.2);
+        }
+        select option { background: #1A3C34; color: white; }
     </style>
 </head>
-<body class="bg-[#FDFCF8] text-[#1A3C34] selection:bg-lime-200 min-h-screen">
+<body class="text-white">
     <div id="root"></div>
 
     <script type="module">
-        import React, { useState, useEffect, useMemo } from 'https://esm.sh/react@18.2.0';
+        import React, { useState, useEffect, useMemo, useRef, useCallback } from 'https://esm.sh/react@18.2.0';
         import ReactDOM from 'https://esm.sh/react-dom@18.2.0/client';
+        import { motion, AnimatePresence } from 'https://esm.sh/framer-motion@10';
 
-        const INCOME_CATEGORIES = ["Получено от клиента", "Другое"];
-        const EXPENSE_CATEGORIES = ["На покупку саженцев", "На покупку инвентаря", "На покупку расходников", "На стройматериалы", "Мастеру за ...", "Еда", "Транспорт", "Развлечения", "Здоровье", "Одежда", "Другое"];
-        const MONTHS = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
+        // ─── Constants ───────────────────────────────────────────────────────────
+        const INCOME_CATS  = ["Получено от клиента", "Аванс", "Другое"];
+        const EXPENSE_CATS = [
+            "На покупку саженцев", "На покупку инвентаря", "На покупку расходников",
+            "На стройматериалы", "Мастеру за...", "Еда", "Транспорт",
+            "Здоровье", "Одежда", "Другое"
+        ];
+        const MONTHS = ["Январь","Февраль","Март","Апрель","Май","Июнь",
+                        "Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
+        const STORAGE_KEY = 'landscaping_transactions';
 
-        function App() {
-            const [transactions, setTransactions] = useState(() => {
-                const saved = localStorage.getItem('landscaping_transactions');
-                return saved ? JSON.parse(saved) : [];
-            });
+        const fmt = n => Math.abs(n).toLocaleString('ru-RU');
 
-            const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
-            const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-            const [incAmount, setIncAmount] = useState('');
-            const [incCategory, setIncCategory] = useState(INCOME_CATEGORIES[0]);
-            const [incNote, setIncNote] = useState('');
-            const [expAmount, setExpAmount] = useState('');
-            const [expCategory, setExpCategory] = useState(EXPENSE_CATEGORIES[0]);
-            const [expNote, setExpNote] = useState('');
+        // ─── SVG Icons ───────────────────────────────────────────────────────────
+        const PATHS = {
+            leaf:      "M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12",
+            trash:     "M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2",
+            settings:  "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z",
+            download:  "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3",
+            upload:    "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12",
+            plus:      "M12 5v14M5 12h14",
+            x:         "M18 6 6 18M6 6l12 12",
+            chevL:     "M15 18l-6-6 6-6",
+            chevR:     "M9 18l6-6-6-6",
+            scale:     "M12 3v18M3 7h2c2 0 4-1 7-1s5 1 7 1h2M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1z",
+        };
 
-            useEffect(() => {
-                localStorage.setItem('landscaping_transactions', JSON.stringify(transactions));
-            }, [transactions]);
+        const Ico = ({ name, size = 20, stroke = "currentColor" }) =>
+            React.createElement('svg', {
+                width: size, height: size, viewBox: "0 0 24 24", fill: "none",
+                stroke, strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round",
+                style: { display: 'inline-block', flexShrink: 0 }
+            }, React.createElement('path', { d: PATHS[name] }));
 
-            const addTransaction = (type) => {
-                const amount = parseFloat(type === 'income' ? incAmount : expAmount);
-                const category = type === 'income' ? incCategory : expCategory;
-                const note = type === 'income' ? incNote : expNote;
-                if (isNaN(amount) || amount <= 0) return;
+        // ─── Settings Modal ───────────────────────────────────────────────────────
+        function SettingsModal({ transactions, setTransactions, onClose }) {
+            const fileRef = useRef(null);
 
-                const now = new Date();
-                const transactionDate = new Date(selectedYear, selectedMonth, now.getDate(), now.getHours(), now.getMinutes());
-                const newTransaction = {
-                    id: Math.random().toString(36).substr(2, 9),
-                    amount,
-                    category: note ? `${category} (${note})` : category,
-                    date: transactionDate.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' }),
-                    timestamp: transactionDate.getTime(),
-                    type
-                };
-
-                setTransactions(prev => [newTransaction, ...prev]);
-                if (type === 'income') { setIncAmount(''); setIncNote(''); }
-                else { setExpAmount(''); setExpNote(''); }
+            const download = () => {
+                const json = JSON.stringify({ version: 2, exported: new Date().toISOString(), transactions }, null, 2);
+                const a = Object.assign(document.createElement('a'), {
+                    href: URL.createObjectURL(new Blob([json], { type: 'application/json' })),
+                    download: `uchet_backup_${new Date().toISOString().slice(0, 10)}.json`
+                });
+                a.click();
             };
 
-            const deleteTransaction = (id) => setTransactions(prev => prev.filter(t => t.id !== id));
+            const upload = e => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = ev => {
+                    try {
+                        const parsed = JSON.parse(ev.target.result);
+                        const data = Array.isArray(parsed) ? parsed : (parsed.transactions || []);
+                        setTransactions(data);
+                        onClose();
+                    } catch { alert('Ошибка: неверный формат файла'); }
+                };
+                reader.readAsText(file);
+            };
 
-            const filteredTransactions = useMemo(() =>
-                transactions.filter(t => {
-                    const d = new Date(t.timestamp);
-                    return d.getMonth() === selectedMonth && d.getFullYear() === selectedYear;
-                }).sort((a, b) => b.timestamp - a.timestamp)
-            , [transactions, selectedMonth, selectedYear]);
+            const reset = () => {
+                if (confirm('Удалить все записи? Это нельзя отменить.')) {
+                    setTransactions([]);
+                    onClose();
+                }
+            };
 
-            const totals = useMemo(() => {
-                const income = filteredTransactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
-                const expenses = filteredTransactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
-                return { income, expenses, balance: income - expenses };
-            }, [filteredTransactions]);
-
-            return React.createElement('div', { className: 'max-w-4xl mx-auto p-4 md:p-8' },
-
-                // Header
-                React.createElement('header', { className: 'text-center mb-10' },
-                    React.createElement('h1', { className: 'text-4xl font-serif font-bold mb-2' }, 'Зелёный Учёт'),
-                    React.createElement('p', { className: 'text-green-600 font-bold uppercase tracking-widest text-xs' }, 'Мастерская по озеленению')
-                ),
-
-                // Month Selector
-                React.createElement('div', { className: 'bg-white p-6 rounded-3xl shadow-xl mb-8 flex flex-col items-center gap-4' },
-                    React.createElement('div', { className: 'flex items-center gap-4' },
-                        React.createElement('button', { onClick: () => setSelectedYear(y => y - 1), className: 'p-2 bg-gray-100 rounded-full hover:bg-gray-200' }, '←'),
-                        React.createElement('span', { className: 'text-2xl font-bold' }, selectedYear),
-                        React.createElement('button', { onClick: () => setSelectedYear(y => y + 1), className: 'p-2 bg-gray-100 rounded-full hover:bg-gray-200' }, '→')
+            return React.createElement(motion.div, {
+                initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 },
+                className: 'fixed inset-0 z-50 flex items-end md:items-center justify-center p-4',
+                style: { background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)' },
+                onClick: onClose
+            },
+                React.createElement(motion.div, {
+                    initial: { y: 60, opacity: 0 }, animate: { y: 0, opacity: 1 },
+                    exit: { y: 60, opacity: 0 },
+                    transition: { type: 'spring', damping: 28, stiffness: 320 },
+                    className: 'w-full max-w-sm rounded-[2rem] p-6 glass',
+                    onClick: e => e.stopPropagation()
+                },
+                    React.createElement('div', { className: 'flex items-center justify-between mb-6' },
+                        React.createElement('h2', { className: 'text-xl font-bold font-serif' }, 'Настройки'),
+                        React.createElement('button', {
+                            onClick: onClose,
+                            className: 'p-2 rounded-full hover:bg-white/10 transition-colors'
+                        }, React.createElement(Ico, { name: 'x', size: 18 }))
                     ),
-                    React.createElement('div', { className: 'flex flex-wrap justify-center gap-2' },
-                        MONTHS.map((m, i) => React.createElement('button', {
-                            key: m,
-                            onClick: () => setSelectedMonth(i),
-                            className: `px-3 py-1.5 rounded-xl text-sm font-extrabold transition-all ${selectedMonth === i ? 'bg-[#1A3C34] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`
-                        }, m))
-                    )
-                ),
-
-                // Main Grid
-                React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6 mb-8' },
-
-                    // Income
-                    React.createElement('div', { className: 'bg-[#1A3C34] p-6 rounded-[2rem] text-white' },
-                        React.createElement('p', { className: 'text-lime-400 text-xs font-bold uppercase mb-1' }, 'Доход'),
-                        React.createElement('h2', { className: 'text-3xl font-black mb-6' }, totals.income.toLocaleString(), ' ₽'),
-                        React.createElement('div', { className: 'space-y-3' },
-                            React.createElement('input', { type: 'number', placeholder: 'Сумма', value: incAmount, onChange: e => setIncAmount(e.target.value), className: 'w-full p-3 rounded-xl bg-white/10 border border-white/10 text-white placeholder-white/50 outline-none focus:border-lime-400' }),
-                            React.createElement('input', { type: 'text', placeholder: 'Примечание', value: incNote, onChange: e => setIncNote(e.target.value), className: 'w-full p-3 rounded-xl bg-white/10 border border-white/10 text-white placeholder-white/50 outline-none focus:border-lime-400' }),
-                            React.createElement('button', { onClick: () => addTransaction('income'), className: 'w-full bg-lime-400 text-[#1A3C34] font-bold py-3 rounded-xl hover:bg-lime-300 transition-colors' }, 'Добавить')
-                        )
-                    ),
-
-                    // Expense
-                    React.createElement('div', { className: 'bg-[#C05621] p-6 rounded-[2rem] text-white' },
-                        React.createElement('p', { className: 'text-orange-200 text-xs font-bold uppercase mb-1' }, 'Расход'),
-                        React.createElement('h2', { className: 'text-3xl font-black mb-6' }, totals.expenses.toLocaleString(), ' ₽'),
-                        React.createElement('div', { className: 'space-y-3' },
-                            React.createElement('input', { type: 'number', placeholder: 'Сумма', value: expAmount, onChange: e => setExpAmount(e.target.value), className: 'w-full p-3 rounded-xl bg-white/10 border border-white/10 text-white placeholder-white/50 outline-none focus:border-orange-200' }),
-                            React.createElement('select', { value: expCategory, onChange: e => setExpCategory(e.target.value), className: 'w-full p-3 rounded-xl bg-white/10 border border-white/10 text-white outline-none focus:border-orange-200' },
-                                EXPENSE_CATEGORIES.map(c => React.createElement('option', { key: c, value: c, className: 'text-black' }, c))
-                            ),
-                            React.createElement('input', { type: 'text', placeholder: 'Примечание (необязательно)', value: expNote, onChange: e => setExpNote(e.target.value), className: 'w-full p-3 rounded-xl bg-white/10 border border-white/10 text-white placeholder-white/50 outline-none focus:border-orange-200' }),
-                            React.createElement('button', { onClick: () => addTransaction('expense'), className: 'w-full bg-white text-[#C05621] font-bold py-3 rounded-xl hover:bg-orange-50 transition-colors' }, 'Добавить')
-                        )
-                    )
-                ),
-
-                // Balance
-                React.createElement('div', { className: 'bg-white p-8 rounded-[2rem] shadow-xl text-center mb-8' },
-                    React.createElement('p', { className: 'text-gray-400 font-bold uppercase text-xs mb-2' }, 'Остаток за месяц'),
-                    React.createElement('h2', { className: `text-5xl font-black ${totals.balance >= 0 ? 'text-[#1A3C34]' : 'text-red-600'}` }, totals.balance.toLocaleString(), ' ₽')
-                ),
-
-                // Transactions List
-                filteredTransactions.length > 0
-                    ? React.createElement('div', { className: 'bg-white rounded-[2rem] shadow-xl overflow-hidden' },
-                        React.createElement('div', { className: 'p-6 border-b border-gray-100' },
-                            React.createElement('h3', { className: 'font-bold text-lg' }, 'Записи за ', MONTHS[selectedMonth], ' ', selectedYear)
+                    React.createElement('div', { className: 'space-y-3' },
+                        // Download
+                        React.createElement('button', {
+                            onClick: download,
+                            className: 'w-full flex items-center gap-3 p-4 rounded-2xl bg-lime-400/10 border border-lime-400/25 hover:bg-lime-400/20 transition-colors text-left'
+                        },
+                            React.createElement(Ico, { name: 'download', size: 20, stroke: '#A3E635' }),
+                            React.createElement('div', null,
+                                React.createElement('p', { className: 'font-bold text-lime-400' }, 'Сохранить в файл'),
+                                React.createElement('p', { className: 'text-xs text-white/40 mt-0.5' }, 'Скачать резервную копию .json')
+                            )
                         ),
-                        React.createElement('div', { className: 'divide-y divide-gray-100' },
-                            filteredTransactions.map(t =>
-                                React.createElement('div', { key: t.id, className: 'flex items-center justify-between p-4 hover:bg-gray-50 transition-colors' },
-                                    React.createElement('div', { className: 'flex items-center gap-3' },
-                                        React.createElement('div', { className: `w-2 h-2 rounded-full flex-shrink-0 ${t.type === 'income' ? 'bg-lime-500' : 'bg-orange-500'}` }),
-                                        React.createElement('div', null,
-                                            React.createElement('p', { className: 'font-semibold text-sm' }, t.category),
-                                            React.createElement('p', { className: 'text-gray-400 text-xs' }, t.date)
-                                        )
-                                    ),
-                                    React.createElement('div', { className: 'flex items-center gap-3' },
-                                        React.createElement('span', { className: `font-black ${t.type === 'income' ? 'text-[#1A3C34]' : 'text-[#C05621]'}` },
-                                            t.type === 'income' ? '+' : '−', t.amount.toLocaleString(), ' ₽'
-                                        ),
-                                        React.createElement('button', {
-                                            onClick: () => deleteTransaction(t.id),
-                                            className: 'text-gray-300 hover:text-red-400 transition-colors text-lg leading-none',
-                                            title: 'Удалить'
-                                        }, '×')
-                                    )
-                                )
+                        // Upload
+                        React.createElement('button', {
+                            onClick: () => fileRef.current?.click(),
+                            className: 'w-full flex items-center gap-3 p-4 rounded-2xl bg-blue-400/10 border border-blue-400/25 hover:bg-blue-400/20 transition-colors text-left'
+                        },
+                            React.createElement(Ico, { name: 'upload', size: 20, stroke: '#60a5fa' }),
+                            React.createElement('div', null,
+                                React.createElement('p', { className: 'font-bold text-blue-400' }, 'Загрузить из файла'),
+                                React.createElement('p', { className: 'text-xs text-white/40 mt-0.5' }, 'Восстановить из резервной копии')
+                            )
+                        ),
+                        React.createElement('input', { ref: fileRef, type: 'file', accept: '.json', onChange: upload, className: 'hidden' }),
+                        // Reset
+                        React.createElement('button', {
+                            onClick: reset,
+                            className: 'w-full flex items-center gap-3 p-4 rounded-2xl bg-red-500/10 border border-red-500/25 hover:bg-red-500/20 transition-colors text-left'
+                        },
+                            React.createElement(Ico, { name: 'trash', size: 20, stroke: '#f87171' }),
+                            React.createElement('div', null,
+                                React.createElement('p', { className: 'font-bold text-red-400' }, 'Сбросить всё'),
+                                React.createElement('p', { className: 'text-xs text-white/40 mt-0.5' }, 'Удалить все записи безвозвратно')
                             )
                         )
+                    ),
+                    React.createElement('p', { className: 'text-center text-white/25 text-xs mt-6' },
+                        `${transactions.length} записей сохранено`
                     )
-                    : React.createElement('div', { className: 'bg-white rounded-[2rem] shadow-xl p-10 text-center text-gray-400' },
-                        React.createElement('p', { className: 'font-semibold' }, 'Записей за этот месяц пока нет')
-                    )
+                )
             );
         }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(React.createElement(App));
+        // ─── Transaction Item ─────────────────────────────────────────────────────
+        function TxItem({ t, onDelete }) {
+            return React.createElement(motion.div, {
+                layout: true,
+                initial: { opacity: 0, x: -16 },
+                animate: { opacity: 1, x: 0 },
+                exit: { opacity: 0, x: 20, height: 0, marginBottom: 0, paddingTop: 0, paddingBottom: 0 },
+                transition: { duration: 0.2 },
+                className: 'flex items-center justify-between py-3 border-b border-white/5 last:border-0'
+            },
+                React.createElement('div', { className: 'flex items-center gap-3 min-w-0' },
+                    React.createElement('div', {
+                        className: `w-2 h-2 rounded-full flex-shrink-0 mt-0.5 ${t.type === 'income' ? 'bg-lime-400' : 'bg-orange-400'}`
+                    }),
+                    React.createElement('div', { className: 'min-w-0' },
+                        React.createElement('p', { className: 'font-semibold text-sm leading-snug truncate' }, t.category),
+                        React.createElement('p', { className: 'text-white/35 text-xs mt-0.5' }, t.date)
+                    )
+                ),
+                React.createElement('div', { className: 'flex items-center gap-2 flex-shrink-0 ml-3' },
+                    React.createElement('span', {
+                        className: `font-black text-sm ${t.type === 'income' ? 'text-lime-400' : 'text-orange-400'}`
+                    }, t.type === 'income' ? '+' : '−', fmt(t.amount), '\u00a0₽'),
+                    React.createElement('button', {
+                        onClick: () => onDelete(t.id),
+                        className: 'p-1.5 rounded-xl flex-shrink-0',
+                        style: { background: 'rgba(239,68,68,0.2)' },
+                        title: 'Удалить'
+                    }, React.createElement(Ico, { name: 'trash', size: 14, stroke: '#f87171' }))
+                )
+            );
+        }
+
+        // ─── Input Card ───────────────────────────────────────────────────────────
+        function InputCard({ type, total, amount, setAmount, category, setCategory, note, setNote, cats, onAdd }) {
+            const isInc = type === 'income';
+            return React.createElement(motion.div, {
+                initial: { opacity: 0, y: 20 },
+                animate: { opacity: 1, y: 0 },
+                transition: { delay: isInc ? 0.15 : 0.25 },
+                className: `p-6 rounded-[2.5rem] ${isInc ? 'glass-income' : 'glass-expense'}`
+            },
+                React.createElement('p', {
+                    className: 'text-xs font-bold uppercase tracking-widest mb-1',
+                    style: { color: isInc ? '#A3E635' : '#fb923c' }
+                }, isInc ? 'Доход' : 'Расход'),
+                React.createElement('h2', { className: 'text-3xl font-black mb-5' }, fmt(total), '\u00a0₽'),
+                React.createElement('div', { className: 'space-y-3' },
+                    React.createElement('input', {
+                        type: 'number', placeholder: 'Сумма', value: amount,
+                        onChange: e => setAmount(e.target.value),
+                        onKeyDown: e => e.key === 'Enter' && onAdd(),
+                        className: 'w-full p-3.5 rounded-2xl text-white placeholder-white/35 outline-none transition-colors',
+                        style: { background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.1)' }
+                    }),
+                    React.createElement('select', {
+                        value: category, onChange: e => setCategory(e.target.value),
+                        className: 'w-full p-3.5 rounded-2xl text-white outline-none transition-colors',
+                        style: { background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.1)' }
+                    }, cats.map(c => React.createElement('option', { key: c, value: c }, c))),
+                    React.createElement('input', {
+                        type: 'text', placeholder: 'Примечание (необязательно)', value: note,
+                        onChange: e => setNote(e.target.value),
+                        onKeyDown: e => e.key === 'Enter' && onAdd(),
+                        className: 'w-full p-3.5 rounded-2xl text-white placeholder-white/35 outline-none transition-colors',
+                        style: { background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.1)' }
+                    }),
+                    React.createElement('button', {
+                        onClick: onAdd,
+                        className: 'w-full py-3.5 rounded-2xl font-bold transition-transform active:scale-95 flex items-center justify-center gap-2',
+                        style: isInc ? { background: '#A3E635', color: '#1A3C34' } : { background: '#fb923c', color: '#fff' }
+                    },
+                        React.createElement(Ico, { name: 'plus', size: 18, stroke: isInc ? '#1A3C34' : '#fff' }),
+                        'Добавить'
+                    )
+                )
+            );
+        }
+
+        // ─── Annual Report ────────────────────────────────────────────────────────
+        function AnnualReport({ transactions, year }) {
+            const s = useMemo(() => {
+                const yt = transactions.filter(t => new Date(t.timestamp).getFullYear() === year);
+                const inc = yt.filter(t => t.type === 'income').reduce((a, t) => a + t.amount, 0);
+                const exp = yt.filter(t => t.type === 'expense').reduce((a, t) => a + t.amount, 0);
+                return { inc, exp, bal: inc - exp };
+            }, [transactions, year]);
+
+            return React.createElement(motion.div, {
+                initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 },
+                transition: { delay: 0.1 },
+                className: 'glass rounded-[2rem] p-5 mb-6'
+            },
+                React.createElement('div', { className: 'flex items-center gap-2 mb-4' },
+                    React.createElement(Ico, { name: 'scale', size: 16, stroke: '#A3E635' }),
+                    React.createElement('p', { className: 'text-xs font-bold uppercase tracking-widest text-white/50' },
+                        `Годовой отчёт ${year}`)
+                ),
+                React.createElement('div', { className: 'grid grid-cols-3 gap-2 text-center' },
+                    React.createElement('div', null,
+                        React.createElement('p', { className: 'text-lime-400 text-xs font-bold uppercase mb-1' }, 'Доходы'),
+                        React.createElement('p', { className: 'font-black text-base text-lime-400' }, fmt(s.inc), '\u00a0₽')
+                    ),
+                    React.createElement('div', null,
+                        React.createElement('p', { className: 'text-orange-400 text-xs font-bold uppercase mb-1' }, 'Расходы'),
+                        React.createElement('p', { className: 'font-black text-base text-orange-400' }, fmt(s.exp), '\u00a0₽')
+                    ),
+                    React.createElement('div', null,
+                        React.createElement('p', { className: 'text-white/50 text-xs font-bold uppercase mb-1' }, 'Итого'),
+                        React.createElement('p', { className: `font-black text-base ${s.bal >= 0 ? 'text-white' : 'text-red-400'}` },
+                            (s.bal < 0 ? '−' : '') + fmt(s.bal), '\u00a0₽')
+                    )
+                )
+            );
+        }
+
+        // ─── App ──────────────────────────────────────────────────────────────────
+        function App() {
+            const [transactions, setTransactions] = useState(() => {
+                try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+                catch { return []; }
+            });
+            const [month, setMonth] = useState(new Date().getMonth());
+            const [year,  setYear]  = useState(new Date().getFullYear());
+            const [incAmount, setIncAmount] = useState('');
+            const [incCat,    setIncCat]    = useState(INCOME_CATS[0]);
+            const [incNote,   setIncNote]   = useState('');
+            const [expAmount, setExpAmount] = useState('');
+            const [expCat,    setExpCat]    = useState(EXPENSE_CATS[0]);
+            const [expNote,   setExpNote]   = useState('');
+            const [showSettings, setShowSettings] = useState(false);
+
+            useEffect(() => {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
+            }, [transactions]);
+
+            const addTx = useCallback((type) => {
+                const raw = type === 'income' ? incAmount : expAmount;
+                const amount = parseFloat(raw);
+                if (isNaN(amount) || amount <= 0) return;
+                const cat  = type === 'income' ? incCat  : expCat;
+                const note = type === 'income' ? incNote : expNote;
+                const now  = new Date();
+                const d    = new Date(year, month, now.getDate(), now.getHours(), now.getMinutes());
+                const tx   = {
+                    id: Date.now().toString(36) + Math.random().toString(36).slice(2),
+                    amount,
+                    category: note.trim() ? `${cat} (${note.trim()})` : cat,
+                    date: d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+                    timestamp: d.getTime(),
+                    type
+                };
+                setTransactions(prev => [tx, ...prev]);
+                if (type === 'income') { setIncAmount(''); setIncNote(''); }
+                else                   { setExpAmount(''); setExpNote(''); }
+            }, [incAmount, expAmount, incCat, expCat, incNote, expNote, year, month]);
+
+            const deleteTx = useCallback((id) => {
+                setTransactions(prev => prev.filter(t => t.id !== id));
+            }, []);
+
+            const prevMonth = () => { if (month === 0) { setMonth(11); setYear(y => y-1); } else setMonth(m => m-1); };
+            const nextMonth = () => { if (month === 11) { setMonth(0); setYear(y => y+1); } else setMonth(m => m+1); };
+
+            const filtered = useMemo(() =>
+                transactions
+                    .filter(t => { const d = new Date(t.timestamp); return d.getMonth() === month && d.getFullYear() === year; })
+                    .sort((a, b) => b.timestamp - a.timestamp)
+            , [transactions, month, year]);
+
+            const totals = useMemo(() => {
+                const inc = filtered.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+                const exp = filtered.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+                return { inc, exp, bal: inc - exp };
+            }, [filtered]);
+
+            return React.createElement('div', { className: 'max-w-2xl mx-auto p-4 md:p-8 pb-16' },
+
+                // ── Header ──
+                React.createElement(motion.header, {
+                    initial: { opacity: 0, y: -20 }, animate: { opacity: 1, y: 0 },
+                    className: 'flex items-center justify-between mb-8'
+                },
+                    React.createElement('div', { className: 'flex items-center gap-3' },
+                        React.createElement('div', {
+                            className: 'w-11 h-11 rounded-2xl flex items-center justify-center',
+                            style: { background: 'rgba(163,230,53,0.15)' }
+                        }, React.createElement(Ico, { name: 'leaf', size: 22, stroke: '#A3E635' })),
+                        React.createElement('div', null,
+                            React.createElement('h1', { className: 'text-xl font-serif font-bold leading-none' }, 'Зелёный Учёт'),
+                            React.createElement('p', { className: 'text-white/35 text-xs mt-0.5' }, 'Мастерская по озеленению')
+                        )
+                    ),
+                    React.createElement('button', {
+                        onClick: () => setShowSettings(true),
+                        className: 'w-11 h-11 rounded-2xl glass flex items-center justify-center hover:bg-white/10 transition-colors'
+                    }, React.createElement(Ico, { name: 'settings', size: 18, stroke: 'rgba(255,255,255,0.55)' }))
+                ),
+
+                // ── Month / Year Selector ──
+                React.createElement(motion.div, {
+                    initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 },
+                    className: 'glass rounded-[2rem] p-5 mb-6'
+                },
+                    React.createElement('div', { className: 'flex items-center justify-between mb-4' },
+                        React.createElement('button', {
+                            onClick: prevMonth,
+                            className: 'p-2.5 rounded-xl hover:bg-white/10 transition-colors'
+                        }, React.createElement(Ico, { name: 'chevL', size: 20 })),
+                        React.createElement('div', { className: 'text-center' },
+                            React.createElement('p', { className: 'font-black text-xl' }, MONTHS[month]),
+                            React.createElement('div', { className: 'flex items-center gap-3 justify-center mt-1' },
+                                React.createElement('button', {
+                                    onClick: () => setYear(y => y-1),
+                                    className: 'text-white/35 hover:text-white text-sm transition-colors'
+                                }, '←'),
+                                React.createElement('span', { className: 'text-white/50 text-sm font-semibold' }, year),
+                                React.createElement('button', {
+                                    onClick: () => setYear(y => y+1),
+                                    className: 'text-white/35 hover:text-white text-sm transition-colors'
+                                }, '→')
+                            )
+                        ),
+                        React.createElement('button', {
+                            onClick: nextMonth,
+                            className: 'p-2.5 rounded-xl hover:bg-white/10 transition-colors'
+                        }, React.createElement(Ico, { name: 'chevR', size: 20 }))
+                    ),
+                    React.createElement('div', { className: 'flex gap-1.5 flex-wrap justify-center' },
+                        MONTHS.map((m, i) => React.createElement('button', {
+                            key: m, onClick: () => setMonth(i),
+                            className: 'px-2.5 py-1 rounded-xl text-xs font-bold transition-all',
+                            style: i === month
+                                ? { background: '#A3E635', color: '#1A3C34' }
+                                : { color: 'rgba(255,255,255,0.35)' }
+                        }, m.slice(0, 3)))
+                    )
+                ),
+
+                // ── Monthly Stats ──
+                React.createElement(motion.div, {
+                    initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 },
+                    transition: { delay: 0.05 },
+                    className: 'grid grid-cols-3 gap-3 mb-6'
+                },
+                    [
+                        { label: 'Доход',   value: totals.inc, color: 'text-lime-400' },
+                        { label: 'Расход',  value: totals.exp, color: 'text-orange-400' },
+                        { label: 'Остаток', value: totals.bal, color: totals.bal >= 0 ? 'text-white' : 'text-red-400' }
+                    ].map(({ label, value, color }) =>
+                        React.createElement('div', { key: label, className: 'glass rounded-2xl p-4 text-center' },
+                            React.createElement('p', { className: `${color} text-xs font-bold uppercase mb-1` }, label),
+                            React.createElement('p', { className: `font-black text-base ${color}` },
+                                value < 0 ? '−' : '', fmt(value), '\u00a0₽')
+                        )
+                    )
+                ),
+
+                // ── Annual Report ──
+                React.createElement(AnnualReport, { transactions, year }),
+
+                // ── Input Forms ──
+                React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-4 mb-6' },
+                    React.createElement(InputCard, {
+                        type: 'income', total: totals.inc,
+                        amount: incAmount, setAmount: setIncAmount,
+                        category: incCat, setCategory: setIncCat,
+                        note: incNote, setNote: setIncNote,
+                        cats: INCOME_CATS, onAdd: () => addTx('income')
+                    }),
+                    React.createElement(InputCard, {
+                        type: 'expense', total: totals.exp,
+                        amount: expAmount, setAmount: setExpAmount,
+                        category: expCat, setCategory: setExpCat,
+                        note: expNote, setNote: setExpNote,
+                        cats: EXPENSE_CATS, onAdd: () => addTx('expense')
+                    })
+                ),
+
+                // ── Transactions List ──
+                React.createElement('div', { className: 'glass rounded-[2rem] overflow-hidden' },
+                    React.createElement('div', { className: 'px-6 py-4 border-b border-white/5 flex items-center justify-between' },
+                        React.createElement('h3', { className: 'font-bold' }, `Записи — ${MONTHS[month]} ${year}`),
+                        React.createElement('span', { className: 'text-white/35 text-sm' }, filtered.length, '\u00a0шт.')
+                    ),
+                    filtered.length === 0
+                        ? React.createElement('div', { className: 'p-10 text-center text-white/25' },
+                            React.createElement('p', null, 'Записей за этот месяц нет'))
+                        : React.createElement('div', { className: 'px-6 py-2' },
+                            React.createElement(AnimatePresence, null,
+                                filtered.map(t => React.createElement(TxItem, { key: t.id, t, onDelete: deleteTx }))
+                            ))
+                ),
+
+                // ── Settings Modal ──
+                React.createElement(AnimatePresence, null,
+                    showSettings && React.createElement(SettingsModal, {
+                        transactions, setTransactions,
+                        onClose: () => setShowSettings(false)
+                    })
+                )
+            );
+        }
+
+        ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
     </script>
 </body>
 </html>
