@@ -301,7 +301,17 @@
                                 React.createElement('p', { style: { fontSize: '0.75rem', color: '#6B9FD4', marginTop: 2 } }, 'Восстановить из резервной копии')
                             )
                         ),
-                        React.createElement('input', { ref: fileRef, type: 'file', accept: '.json', onChange: upload, style: { display: 'none' } })
+                        React.createElement('input', { ref: fileRef, type: 'file', accept: '.json', onChange: upload, style: { display: 'none' } }),
+                        React.createElement('button', {
+                            onClick: () => { if (confirm('Удалить все записи? Это нельзя отменить.')) { setTransactions([]); onClose(); } },
+                            style: { display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 14, background: '#FFF5F0', border: '1.5px solid #FCCBB0', cursor: 'pointer', textAlign: 'left', width: '100%' }
+                        },
+                            React.createElement(Ico, { name: 'trash', size: 20, stroke: '#C44008' }),
+                            React.createElement('div', null,
+                                React.createElement('p', { style: { fontWeight: 700, color: '#C44008', fontSize: '0.9rem' } }, 'Очистить данные'),
+                                React.createElement('p', { style: { fontSize: '0.75rem', color: '#C08070', marginTop: 2 } }, 'Удалить все записи безвозвратно')
+                            )
+                        )
                     ),
                     React.createElement('p', { style: { textAlign: 'center', fontSize: '0.72rem', color: '#9AB8A0', marginTop: 16 } },
                         transactions.length + ' записей сохранено')
@@ -593,16 +603,6 @@
                                 annual.bal < 0 ? '−' : '', fmt(annual.bal), '\u00a0₽')
                         )
                     )
-                ),
-
-                // ── Clear Button ──
-                React.createElement('button', {
-                    className: 'btn-clear fade-up',
-                    style: { animationDelay: '0.3s' },
-                    onClick: clearAll
-                },
-                    React.createElement(Ico, { name: 'trash', size: 16, stroke: '#C44008' }),
-                    'Очистить данные'
                 ),
 
                 // ── Settings Modal ──
