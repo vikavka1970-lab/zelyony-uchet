@@ -399,16 +399,16 @@
             if (byCategory.length <= 1) return null;
 
             return React.createElement('div', {
-                style: { marginTop: 12, padding: '12px 0 0', borderTop: '1px solid rgba(255,255,255,0.12)' }
+                style: { marginTop: 14, padding: '14px 0 0', borderTop: '1px solid rgba(255,255,255,0.15)' }
             },
-                React.createElement('p', { className: 'field-label', style: { marginBottom: 8 } }, 'По категориям'),
+                React.createElement('p', { className: 'field-label', style: { marginBottom: 10 } }, 'По категориям'),
                 byCategory.map(([cat, sum]) =>
                     React.createElement('div', {
                         key: cat,
-                        style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 6 }
+                        style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0', borderBottom: '1px solid rgba(255,255,255,0.07)' }
                     },
-                        React.createElement('p', { style: { fontSize: '0.8rem', opacity: 0.75 } }, cat),
-                        React.createElement('p', { style: { fontSize: '0.8rem', fontWeight: 800, opacity: 0.9 } }, fmt(sum), '\u00a0₽')
+                        React.createElement('p', { style: { fontSize: '0.9rem', opacity: 0.85, paddingRight: 8 } }, cat),
+                        React.createElement('p', { style: { fontSize: '0.95rem', fontWeight: 900, flexShrink: 0 } }, fmt(sum), '\u00a0₽')
                     )
                 )
             );
