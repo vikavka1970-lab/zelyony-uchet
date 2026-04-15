@@ -617,25 +617,25 @@
 
                 // ── Annual Report ──
                 React.createElement('div', {
-                    className: 'card-base card-income fade-up',
+                    className: 'card-base card-surface fade-up',
                     style: { animationDelay: '0.25s' }
                 },
                     React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 } },
-                        React.createElement(Ico, { name: 'scale', size: 18, stroke: '#A3E635' }),
-                        React.createElement('h2', { className: 'font-serif', style: { fontSize: '1.4rem', fontWeight: 800, color: 'white' } }, 'Годовой отчёт ' + year)
+                        React.createElement(Ico, { name: 'scale', size: 18, stroke: '#1E7A3E' }),
+                        React.createElement('h2', { className: 'font-serif', style: { fontSize: '1.4rem', fontWeight: 800, color: '#1A3C2A' } }, 'Годовой отчёт ' + year)
                     ),
                     React.createElement('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, textAlign: 'center' } },
-                        React.createElement('div', { style: { background: 'rgba(255,255,255,0.1)', borderRadius: 12, padding: '12px 8px' } },
-                            React.createElement('p', { style: { fontSize: '0.62rem', fontWeight: 700, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 4 } }, 'Доходы'),
-                            React.createElement('p', { style: { fontWeight: 900, color: '#A3E635', fontSize: '0.95rem' } }, fmt(annual.inc), '\u00a0₽')
+                        React.createElement('div', { style: { background: '#F0FBF0', borderRadius: 12, padding: '12px 8px' } },
+                            React.createElement('p', { style: { fontSize: '0.62rem', fontWeight: 700, color: '#5A9A70', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 4 } }, 'Доходы'),
+                            React.createElement('p', { style: { fontWeight: 900, color: '#1E7A3E', fontSize: '0.95rem' } }, fmt(annual.inc), '\u00a0₽')
                         ),
-                        React.createElement('div', { style: { background: 'rgba(255,255,255,0.1)', borderRadius: 12, padding: '12px 8px' } },
-                            React.createElement('p', { style: { fontSize: '0.62rem', fontWeight: 700, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 4 } }, 'Расходы'),
-                            React.createElement('p', { style: { fontWeight: 900, color: '#ffb38a', fontSize: '0.95rem' } }, fmt(annual.exp), '\u00a0₽')
+                        React.createElement('div', { style: { background: '#FFF5F0', borderRadius: 12, padding: '12px 8px' } },
+                            React.createElement('p', { style: { fontSize: '0.62rem', fontWeight: 700, color: '#B06040', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 4 } }, 'Расходы'),
+                            React.createElement('p', { style: { fontWeight: 900, color: '#E8560A', fontSize: '0.95rem' } }, fmt(annual.exp), '\u00a0₽')
                         ),
-                        React.createElement('div', { style: { background: 'rgba(255,255,255,0.1)', borderRadius: 12, padding: '12px 8px' } },
-                            React.createElement('p', { style: { fontSize: '0.62rem', fontWeight: 700, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 4 } }, 'Итого'),
-                            React.createElement('p', { style: { fontWeight: 900, color: annual.bal >= 0 ? '#A3E635' : '#ffb38a', fontSize: '0.95rem' } },
+                        React.createElement('div', { style: { background: annual.bal >= 0 ? '#F0FBF0' : '#FFF5F0', borderRadius: 12, padding: '12px 8px' } },
+                            React.createElement('p', { style: { fontSize: '0.62rem', fontWeight: 700, color: '#7A9A80', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 4 } }, 'Итого'),
+                            React.createElement('p', { style: { fontWeight: 900, color: annual.bal >= 0 ? '#1E7A3E' : '#C44008', fontSize: '0.95rem' } },
                                 annual.bal < 0 ? '−' : '', fmt(annual.bal), '\u00a0₽')
                         )
                     )
