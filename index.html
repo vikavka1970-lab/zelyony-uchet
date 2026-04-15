@@ -456,9 +456,11 @@
                             'Добавить доход'
                         )
                     ),
-                    incFiltered.length > 0 && React.createElement('div', { style: { marginTop: 18 } },
-                        React.createElement('p', { className: 'field-label', style: { marginBottom: 4 } }, 'История доходов (' + mn + ')'),
-                        incFiltered.map(t => React.createElement(TxRow, { key: t.id, t, onDelete: deleteTx, onLight: false }))
+                    React.createElement('div', { style: { marginTop: 20, borderTop: '1px solid rgba(255,255,255,0.15)', paddingTop: 16 } },
+                        React.createElement('p', { className: 'field-label', style: { marginBottom: 8 } }, 'История поступлений (' + mn + ')'),
+                        incFiltered.length === 0
+                            ? React.createElement('p', { style: { fontSize: '0.82rem', opacity: 0.4, fontStyle: 'italic' } }, 'Доходов за этот месяц нет')
+                            : incFiltered.map(t => React.createElement(TxRow, { key: t.id, t, onDelete: deleteTx, onLight: false }))
                     )
                 ),
 
@@ -493,9 +495,11 @@
                             'Добавить расход'
                         )
                     ),
-                    expFiltered.length > 0 && React.createElement('div', { style: { marginTop: 18 } },
-                        React.createElement('p', { className: 'field-label', style: { marginBottom: 4 } }, 'История трат (' + mn + ')'),
-                        expFiltered.map(t => React.createElement(TxRow, { key: t.id, t, onDelete: deleteTx, onLight: false }))
+                    React.createElement('div', { style: { marginTop: 20, borderTop: '1px solid rgba(255,255,255,0.15)', paddingTop: 16 } },
+                        React.createElement('p', { className: 'field-label', style: { marginBottom: 8 } }, 'История трат (' + mn + ')'),
+                        expFiltered.length === 0
+                            ? React.createElement('p', { style: { fontSize: '0.82rem', opacity: 0.4, fontStyle: 'italic' } }, 'Расходов за этот месяц нет')
+                            : expFiltered.map(t => React.createElement(TxRow, { key: t.id, t, onDelete: deleteTx, onLight: false }))
                     )
                 ),
 
