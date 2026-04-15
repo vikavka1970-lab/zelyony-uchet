@@ -430,6 +430,35 @@
             const [expNote,   setExpNote]   = useState('');
             const [expDate,   setExpDate]   = useState(() => new Date().toISOString().slice(0,10));
             const [showSettings, setShowSettings] = useState(false);
+            const [customIncCats, setCustomIncCats] = useState(() => {
+                try { return JSON.parse(localStorage.getItem('custom_inc_cats')) || []; } catch { return []; }
+            });
+            const [customExpCats, setCustomExpCats] = useState(() => {
+                try { return JSON.parse(localStorage.getItem('custom_exp_cats')) || []; } catch { return []; }
+            });
+            const [incCustomInput, setIncCustomInput] = useState('');
+            const [expCustomInput, setExpCustomInput] = useState('');
+            const [showIncCustom, setShowIncCustom] = useState(false);
+            const [showExpCustom, setShowExpCustom] = useState(false);
+
+            useEffect(() => { localStorage.setItem('custom_inc_cats', JSON.stringify(customIncCats)); }, [customIncCats]);
+            useEffect(() => { localStorage.setItem('custom_exp_cats', JSON.stringify(customExpCats)); }, [customExpCats]);
+
+            const addCustomCat = (type) => {
+                const val = type === 'income' ? incCustomInput.trim() : expCustomInput.trim();
+                if (!val) return;
+                if (type === 'income') {
+                    setCustomIncCats(prev => prev.includes(val) ? prev : [...prev, val]);
+                    setIncCat(val);
+                    setIncCustomInput('');
+                    setShowIncCustom(false);
+                } else {
+                    setCustomExpCats(prev => prev.includes(val) ? prev : [...prev, val]);
+                    setExpCat(val);
+                    setExpCustomInput('');
+                    setShowExpCustom(false);
+                }
+            };
             const [toast, setToast] = useState(null);
 
             const showToast = (type, amount) => {
@@ -553,8 +582,29 @@
                         ),
                         React.createElement('div', null,
                             React.createElement('label', { className: 'field-label' }, 'Категория'),
-                            React.createElement('select', { value: incCat, onChange: e => setIncCat(e.target.value), className: 'field-input' },
-                                INCOME_CATS.map(c => React.createElement('option', { key: c, value: c }, c)))
+                            React.createElement('select', {
+                                value: incCat,
+                                onChange: e => {
+                                    if (e.target.value === '__custom__') { setShowIncCustom(true); }
+                                    else { setIncCat(e.target.value); setShowIncCustom(false); }
+                                },
+                                className: 'field-input'
+                            },
+                                [...INCOME_CATS, ...customIncCats].map(c => React.createElement('option', { key: c, value: c }, c)),
+                                React.createElement('option', { value: '__custom__' }, '＋ Своя категория')
+                            ),
+                            showIncCustom && React.createElement('div', { style: { display: 'flex', gap: 8, marginTop: 8 } },
+                                React.createElement('input', {
+                                    type: 'text', placeholder: 'Название категории...', value: incCustomInput,
+                                    onChange: e => setIncCustomInput(e.target.value),
+                                    onKeyDown: e => e.key === 'Enter' && addCustomCat('income'),
+                                    className: 'field-input', style: { flex: 1 }, autoFocus: true
+                                }),
+                                React.createElement('button', {
+                                    onClick: () => addCustomCat('income'),
+                                    style: { padding: '0 14px', borderRadius: 12, background: '#8FD44A', color: '#1A3C2A', border: 'none', fontWeight: 800, cursor: 'pointer', flexShrink: 0 }
+                                }, '✓')
+                            )
                         ),
                         React.createElement('div', null,
                             React.createElement('label', { className: 'field-label' }, 'Примечание'),
@@ -599,8 +649,29 @@
                         ),
                         React.createElement('div', null,
                             React.createElement('label', { className: 'field-label' }, 'Категория'),
-                            React.createElement('select', { value: expCat, onChange: e => setExpCat(e.target.value), className: 'field-input' },
-                                EXPENSE_CATS.map(c => React.createElement('option', { key: c, value: c }, c)))
+                            React.createElement('select', {
+                                value: expCat,
+                                onChange: e => {
+                                    if (e.target.value === '__custom__') { setShowExpCustom(true); }
+                                    else { setExpCat(e.target.value); setShowExpCustom(false); }
+                                },
+                                className: 'field-input'
+                            },
+                                [...EXPENSE_CATS, ...customExpCats].map(c => React.createElement('option', { key: c, value: c }, c)),
+                                React.createElement('option', { value: '__custom__' }, '＋ Своя категория')
+                            ),
+                            showExpCustom && React.createElement('div', { style: { display: 'flex', gap: 8, marginTop: 8 } },
+                                React.createElement('input', {
+                                    type: 'text', placeholder: 'Название категории...', value: expCustomInput,
+                                    onChange: e => setExpCustomInput(e.target.value),
+                                    onKeyDown: e => e.key === 'Enter' && addCustomCat('expense'),
+                                    className: 'field-input', style: { flex: 1 }, autoFocus: true
+                                }),
+                                React.createElement('button', {
+                                    onClick: () => addCustomCat('expense'),
+                                    style: { padding: '0 14px', borderRadius: 12, background: 'white', color: '#C44008', border: 'none', fontWeight: 800, cursor: 'pointer', flexShrink: 0 }
+                                }, '✓')
+                            )
                         ),
                         React.createElement('div', null,
                             React.createElement('label', { className: 'field-label' }, 'Детали расхода'),
