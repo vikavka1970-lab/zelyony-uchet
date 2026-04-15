@@ -512,7 +512,13 @@
                 const yt = transactions.filter(t => new Date(t.timestamp).getFullYear() === year);
                 const inc = yt.filter(t => t.type === 'income').reduce((s,t) => s+t.amount, 0);
                 const exp = yt.filter(t => t.type === 'expense').reduce((s,t) => s+t.amount, 0);
-                return { inc, exp, bal: inc - exp };
+                const byMonth = Array.from({length: 12}, (_, i) => {
+                    const mt = yt.filter(t => new Date(t.timestamp).getMonth() === i);
+                    const mInc = mt.filter(t => t.type === 'income').reduce((s,t) => s+t.amount, 0);
+                    const mExp = mt.filter(t => t.type === 'expense').reduce((s,t) => s+t.amount, 0);
+                    return { month: i, inc: mInc, exp: mExp, bal: mInc - mExp, hasData: mt.length > 0 };
+                });
+                return { inc, exp, bal: inc - exp, byMonth };
             }, [transactions, year]);
 
             const mn = MONTHS[month];
@@ -761,7 +767,7 @@
                         React.createElement(Ico, { name: 'scale', size: 18, stroke: '#1E7A3E' }),
                         React.createElement('h2', { className: 'font-serif', style: { fontSize: '1.4rem', fontWeight: 800, color: '#1A3C2A' } }, 'Годовой отчёт ' + year)
                     ),
-                    React.createElement('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, textAlign: 'center' } },
+                    React.createElement('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, textAlign: 'center', marginBottom: 20 } },
                         React.createElement('div', { style: { background: '#F0FBF0', borderRadius: 12, padding: '12px 8px' } },
                             React.createElement('p', { style: { fontSize: '0.62rem', fontWeight: 700, color: '#5A9A70', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 4 } }, 'Доходы'),
                             React.createElement('p', { style: { fontWeight: 900, color: '#1E7A3E', fontSize: '0.95rem' } }, fmt(annual.inc), '\u00a0₽')
@@ -774,6 +780,32 @@
                             React.createElement('p', { style: { fontSize: '0.62rem', fontWeight: 700, color: '#7A9A80', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 4 } }, 'Итого'),
                             React.createElement('p', { style: { fontWeight: 900, color: annual.bal >= 0 ? '#1E7A3E' : '#C44008', fontSize: '0.95rem' } },
                                 annual.bal < 0 ? '−' : '', fmt(annual.bal), '\u00a0₽')
+                        )
+                    ),
+                    // Monthly breakdown
+                    annual.byMonth.some(m => m.hasData) && React.createElement('div', null,
+                        React.createElement('p', { style: { fontSize: '0.7rem', fontWeight: 700, color: '#5A9A70', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 10 } }, 'По месяцам'),
+                        React.createElement('div', { style: { display: 'grid', gridTemplateColumns: '3fr 2fr 2fr 2fr', gap: '4px 6px', alignItems: 'center' } },
+                            React.createElement('span', { style: { fontSize: '0.58rem', fontWeight: 700, color: '#94A3A0', textTransform: 'uppercase' } }, ''),
+                            React.createElement('span', { style: { fontSize: '0.58rem', fontWeight: 700, color: '#5A9A70', textTransform: 'uppercase', textAlign: 'right' } }, 'Доход'),
+                            React.createElement('span', { style: { fontSize: '0.58rem', fontWeight: 700, color: '#B06040', textTransform: 'uppercase', textAlign: 'right' } }, 'Расход'),
+                            React.createElement('span', { style: { fontSize: '0.58rem', fontWeight: 700, color: '#7A9A80', textTransform: 'uppercase', textAlign: 'right' } }, 'Итого'),
+                            ...annual.byMonth.filter(m => m.hasData).map(m =>
+                                React.createElement(React.Fragment, { key: m.month },
+                                    React.createElement('span', { style: { fontSize: '0.82rem', fontWeight: 600, color: '#2D5A3D', paddingTop: 4 } },
+                                        MONTHS[m.month]
+                                    ),
+                                    React.createElement('span', { style: { fontSize: '0.82rem', fontWeight: 700, color: '#1E7A3E', textAlign: 'right', paddingTop: 4 } },
+                                        m.inc > 0 ? fmt(m.inc) + '\u00a0₽' : '—'
+                                    ),
+                                    React.createElement('span', { style: { fontSize: '0.82rem', fontWeight: 700, color: '#E8560A', textAlign: 'right', paddingTop: 4 } },
+                                        m.exp > 0 ? fmt(m.exp) + '\u00a0₽' : '—'
+                                    ),
+                                    React.createElement('span', { style: { fontSize: '0.82rem', fontWeight: 800, color: m.bal >= 0 ? '#1E7A3E' : '#C44008', textAlign: 'right', paddingTop: 4 } },
+                                        (m.bal < 0 ? '−' : '') + fmt(m.bal) + '\u00a0₽'
+                                    )
+                                )
+                            )
                         )
                     )
                 ),
