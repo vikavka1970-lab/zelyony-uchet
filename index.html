@@ -430,6 +430,8 @@
             const [expNote,   setExpNote]   = useState('');
             const [expDate,   setExpDate]   = useState(() => new Date().toISOString().slice(0,10));
             const [showSettings, setShowSettings] = useState(false);
+            const [incSearch, setIncSearch] = useState('');
+            const [expSearch, setExpSearch] = useState('');
             const [customIncCats, setCustomIncCats] = useState(() => {
                 try { return JSON.parse(localStorage.getItem('custom_inc_cats')) || []; } catch { return []; }
             });
@@ -516,6 +518,13 @@
             const mn = MONTHS[month];
             const incFiltered = filtered.filter(t => t.type === 'income');
             const expFiltered = filtered.filter(t => t.type === 'expense');
+
+            const incSearched = incSearch.trim()
+                ? incFiltered.filter(t => t.category.toLowerCase().includes(incSearch.toLowerCase()))
+                : incFiltered;
+            const expSearched = expSearch.trim()
+                ? expFiltered.filter(t => t.category.toLowerCase().includes(expSearch.toLowerCase()))
+                : expFiltered;
 
             return React.createElement('div', { style: { maxWidth: 520, margin: '0 auto', padding: '20px 14px 60px' } },
 
@@ -623,13 +632,23 @@
                         )
                     ),
                     React.createElement('div', { style: { marginTop: 20, borderTop: '1px solid rgba(255,255,255,0.15)', paddingTop: 16 } },
-                        React.createElement('p', { className: 'field-label', style: { marginBottom: 8 } }, 'История поступлений (' + mn + ')'),
+                        React.createElement('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 } },
+                            React.createElement('p', { className: 'field-label', style: { margin: 0 } }, 'История поступлений (' + mn + ')'),
+                            React.createElement('span', { style: { fontSize: '0.72rem', opacity: 0.45 } }, incFiltered.length + ' шт.')
+                        ),
+                        incFiltered.length > 0 && React.createElement('input', {
+                            type: 'text', placeholder: '🔍 Поиск...', value: incSearch,
+                            onChange: e => setIncSearch(e.target.value),
+                            className: 'field-input', style: { marginBottom: 10, padding: '9px 13px', fontSize: '0.85rem' }
+                        }),
                         incFiltered.length === 0
                             ? React.createElement('p', { style: { fontSize: '0.82rem', opacity: 0.4, fontStyle: 'italic' } }, 'Доходов за этот месяц нет')
-                            : [
-                                ...incFiltered.map(t => React.createElement(TxRow, { key: t.id, t, onDelete: deleteTx, onLight: false })),
-                                incFiltered.length > 1 && React.createElement(CategorySummary, { key: 'inc-summary', items: incFiltered })
-                              ]
+                            : incSearched.length === 0
+                                ? React.createElement('p', { style: { fontSize: '0.82rem', opacity: 0.4, fontStyle: 'italic' } }, 'Ничего не найдено')
+                                : [
+                                    ...incSearched.map(t => React.createElement(TxRow, { key: t.id, t, onDelete: deleteTx, onLight: false })),
+                                    incSearched.length > 1 && React.createElement(CategorySummary, { key: 'inc-summary', items: incSearched })
+                                  ]
                     )
                 ),
 
@@ -690,13 +709,23 @@
                         )
                     ),
                     React.createElement('div', { style: { marginTop: 20, borderTop: '1px solid rgba(255,255,255,0.15)', paddingTop: 16 } },
-                        React.createElement('p', { className: 'field-label', style: { marginBottom: 8 } }, 'История трат (' + mn + ')'),
+                        React.createElement('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 } },
+                            React.createElement('p', { className: 'field-label', style: { margin: 0 } }, 'История трат (' + mn + ')'),
+                            React.createElement('span', { style: { fontSize: '0.72rem', opacity: 0.45 } }, expFiltered.length + ' шт.')
+                        ),
+                        expFiltered.length > 0 && React.createElement('input', {
+                            type: 'text', placeholder: '🔍 Поиск...', value: expSearch,
+                            onChange: e => setExpSearch(e.target.value),
+                            className: 'field-input', style: { marginBottom: 10, padding: '9px 13px', fontSize: '0.85rem' }
+                        }),
                         expFiltered.length === 0
-                            ? React.createElement('p', { style: { fontSize: '0.82rem', opacity: 0.4, fontStyle: 'italic' } }, 'Расходов за этот месяц нет')
-                            : [
-                                ...expFiltered.map(t => React.createElement(TxRow, { key: t.id, t, onDelete: deleteTx, onLight: false })),
-                                expFiltered.length > 1 && React.createElement(CategorySummary, { key: 'exp-summary', items: expFiltered })
-                              ]
+                            ? React.createElement('p', { style: { fontSize: '0.82rem', opacity: 0.4, fontStyle: 'italic' } }, 'Расходов за этот месяца нет')
+                            : expSearched.length === 0
+                                ? React.createElement('p', { style: { fontSize: '0.82rem', opacity: 0.4, fontStyle: 'italic' } }, 'Ничего не найдено')
+                                : [
+                                    ...expSearched.map(t => React.createElement(TxRow, { key: t.id, t, onDelete: deleteTx, onLight: false })),
+                                    expSearched.length > 1 && React.createElement(CategorySummary, { key: 'exp-summary', items: expSearched })
+                                  ]
                     )
                 ),
 
