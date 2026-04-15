@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="google" content="notranslate">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Зелёный Учёт">
     <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/240/leaf.png">
     <title>Зелёный Учёт</title>
@@ -13,12 +13,27 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; }
+
         body {
             font-family: 'Inter', sans-serif;
-            background: #1A3C34;
             min-height: 100vh;
-            color: white;
+            background: #EEF7EC;
+            color: #1A3C2A;
         }
+
+        /* Декоративный фон — мягкий природный градиент */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background:
+                radial-gradient(ellipse at 20% 10%, rgba(134,210,100,0.18) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(255,160,60,0.10) 0%, transparent 50%),
+                radial-gradient(ellipse at 60% 20%, rgba(80,180,90,0.12) 0%, transparent 40%),
+                #EEF7EC;
+        }
+
         .font-serif { font-family: 'Playfair Display', serif; }
 
         input[type="number"]::-webkit-inner-spin-button,
@@ -26,71 +41,90 @@
         input[type="number"] { -moz-appearance: textfield; }
 
         /* Cards */
+        .card-base {
+            border-radius: 1.75rem;
+            padding: 24px;
+            margin-bottom: 14px;
+        }
+        .card-surface {
+            background: #ffffff;
+            box-shadow: 0 2px 16px rgba(30,90,40,0.08), 0 1px 3px rgba(30,90,40,0.05);
+        }
         .card-income {
-            background: rgba(0, 0, 0, 0.25);
-            border-radius: 2rem;
-            border: 1px solid rgba(163, 230, 53, 0.15);
+            background: linear-gradient(135deg, #1E7A3E 0%, #145C2C 100%);
+            color: white;
+            box-shadow: 0 4px 24px rgba(30,122,62,0.35);
         }
         .card-expense {
-            background: #C05621;
-            border-radius: 2rem;
-        }
-        .card-white {
-            background: rgba(255,255,255,0.07);
-            border-radius: 2rem;
-            border: 1px solid rgba(255,255,255,0.08);
+            background: linear-gradient(135deg, #E8560A 0%, #C44008 100%);
+            color: white;
+            box-shadow: 0 4px 24px rgba(232,86,10,0.30);
         }
 
         /* Inputs */
         .field-label {
             font-size: 0.65rem;
             font-weight: 700;
-            letter-spacing: 0.1em;
+            letter-spacing: 0.09em;
             text-transform: uppercase;
-            opacity: 0.55;
+            opacity: 0.6;
             margin-bottom: 6px;
+            display: block;
         }
         .field-input {
             width: 100%;
-            padding: 14px 16px;
-            border-radius: 14px;
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.12);
+            padding: 13px 15px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.2);
             color: white;
             font-family: 'Inter', sans-serif;
             font-size: 0.95rem;
             outline: none;
             transition: border-color 0.2s;
         }
-        .field-input::placeholder { color: rgba(255,255,255,0.3); }
-        .field-input:focus { border-color: rgba(255,255,255,0.35); }
-        select.field-input option { background: #1A3C34; color: white; }
+        .field-input::placeholder { color: rgba(255,255,255,0.4); }
+        .field-input:focus { border-color: rgba(255,255,255,0.5); }
+        select.field-input option { background: #1E7A3E; color: white; }
+
+        .field-input-light {
+            width: 100%;
+            padding: 13px 15px;
+            border-radius: 12px;
+            background: #F3FAF0;
+            border: 1.5px solid #C8E6C0;
+            color: #1A3C2A;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .field-input-light:focus { border-color: #5DBE6E; }
+        select.field-input-light option { background: #F3FAF0; }
 
         /* Month tabs */
         .month-tabs {
             display: flex;
             gap: 6px;
             overflow-x: auto;
-            padding-bottom: 4px;
+            padding-bottom: 2px;
             scrollbar-width: none;
         }
         .month-tabs::-webkit-scrollbar { display: none; }
         .month-tab {
             flex-shrink: 0;
-            padding: 6px 14px;
+            padding: 7px 15px;
             border-radius: 20px;
             font-size: 0.8rem;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.2s;
-            background: rgba(255,255,255,0.1);
-            color: rgba(255,255,255,0.5);
             border: none;
+            transition: all 0.18s;
+            background: rgba(30,122,62,0.1);
+            color: #2D6A4A;
         }
-        .month-tab.active {
-            background: #A3E635;
-            color: #1A3C34;
-        }
+        .month-tab:hover { background: rgba(30,122,62,0.18); }
+        .month-tab.active { background: #1E7A3E; color: white; }
 
         /* Animations */
         @keyframes fadeUp {
@@ -102,46 +136,46 @@
             from { opacity: 0; transform: scale(0.95) translateY(10px); }
             to   { opacity: 1; transform: scale(1) translateY(0); }
         }
-        .fade-up { animation: fadeUp 0.3s ease both; }
-        .fade-in { animation: fadeIn 0.2s ease both; }
+        .fade-up { animation: fadeUp 0.32s ease both; }
         .scale-in { animation: scaleIn 0.25s cubic-bezier(.2,.8,.4,1) both; }
 
         /* Modal */
         .modal-bg {
             position: fixed; inset: 0; z-index: 50;
             display: flex; align-items: flex-end; justify-content: center; padding: 1rem;
-            background: rgba(0,0,0,0.6);
+            background: rgba(10,40,15,0.5);
             backdrop-filter: blur(6px);
             animation: fadeIn 0.2s ease both;
         }
         @media (min-width: 640px) { .modal-bg { align-items: center; } }
 
-        /* Today button */
-        .btn-today {
-            padding: 6px 16px;
-            border-radius: 20px;
-            background: #A3E635;
-            color: #1A3C34;
-            font-size: 0.8rem;
-            font-weight: 800;
-            border: none;
-            cursor: pointer;
+        /* Buttons */
+        .btn-primary {
+            width: 100%; padding: 14px; border-radius: 13px;
+            font-weight: 800; font-size: 0.95rem; border: none; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            transition: opacity 0.15s, transform 0.1s;
         }
-        .btn-add {
-            width: 100%;
-            padding: 15px;
-            border-radius: 14px;
-            font-weight: 700;
-            font-size: 0.95rem;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+        .btn-primary:active { opacity: 0.8; transform: scale(0.98); }
+
+        .btn-today {
+            padding: 6px 16px; border-radius: 20px;
+            background: #1E7A3E; color: white;
+            font-size: 0.78rem; font-weight: 800; border: none; cursor: pointer;
             transition: opacity 0.15s;
         }
-        .btn-add:active { opacity: 0.75; }
+        .btn-today:hover { opacity: 0.85; }
+
+        .btn-clear {
+            width: 100%; padding: 14px; border-radius: 13px;
+            font-weight: 700; font-size: 0.9rem; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            background: transparent;
+            border: 1.5px solid #E8B4A0;
+            color: #C44008;
+            transition: background 0.15s;
+        }
+        .btn-clear:hover { background: rgba(232,86,10,0.06); }
     </style>
 </head>
 <body>
@@ -211,91 +245,75 @@
                 reader.readAsText(file);
             };
 
-            const reset = () => {
-                if (confirm('Удалить все записи? Это нельзя отменить.')) { setTransactions([]); onClose(); }
-            };
-
-            const btnBase = 'w-full flex items-center gap-3 p-4 rounded-2xl text-left transition-opacity hover:opacity-80';
-
             return React.createElement('div', { className: 'modal-bg', onClick: onClose },
                 React.createElement('div', {
-                    className: 'w-full max-w-sm card-white p-6 scale-in',
+                    className: 'scale-in card-base card-surface',
+                    style: { width: '100%', maxWidth: 380, marginBottom: 0 },
                     onClick: e => e.stopPropagation()
                 },
-                    React.createElement('div', { className: 'flex items-center justify-between mb-6' },
-                        React.createElement('h2', { className: 'text-xl font-bold font-serif' }, 'Настройки'),
-                        React.createElement('button', { onClick: onClose, className: 'p-2 rounded-full hover:bg-white/10' },
-                            React.createElement(Ico, { name: 'x', size: 18 }))
+                    React.createElement('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 } },
+                        React.createElement('h2', { className: 'font-serif', style: { fontSize: '1.2rem', fontWeight: 800 } }, 'Настройки'),
+                        React.createElement('button', {
+                            onClick: onClose,
+                            style: { padding: 8, borderRadius: 10, background: '#F3FAF0', border: 'none', cursor: 'pointer' }
+                        }, React.createElement(Ico, { name: 'x', size: 16, stroke: '#1A3C2A' }))
                     ),
-                    React.createElement('div', { className: 'space-y-3' },
+                    React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
                         React.createElement('button', {
                             onClick: download,
-                            className: btnBase,
-                            style: { background: 'rgba(163,230,53,0.1)', border: '1px solid rgba(163,230,53,0.2)' }
+                            style: { display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 14, background: '#F0FBF0', border: '1.5px solid #B8E6C0', cursor: 'pointer', textAlign: 'left' }
                         },
-                            React.createElement(Ico, { name: 'download', size: 20, stroke: '#A3E635' }),
+                            React.createElement(Ico, { name: 'download', size: 20, stroke: '#1E7A3E' }),
                             React.createElement('div', null,
-                                React.createElement('p', { className: 'font-bold', style: { color: '#A3E635' } }, 'Сохранить в файл'),
-                                React.createElement('p', { className: 'text-xs mt-0.5', style: { color: 'rgba(255,255,255,0.4)' } }, 'Скачать резервную копию .json')
+                                React.createElement('p', { style: { fontWeight: 700, color: '#1E7A3E', fontSize: '0.9rem' } }, 'Сохранить в файл'),
+                                React.createElement('p', { style: { fontSize: '0.75rem', color: '#6A9A7A', marginTop: 2 } }, 'Скачать резервную копию .json')
                             )
                         ),
                         React.createElement('button', {
                             onClick: () => fileRef.current?.click(),
-                            className: btnBase,
-                            style: { background: 'rgba(96,165,250,0.1)', border: '1px solid rgba(96,165,250,0.2)' }
+                            style: { display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 14, background: '#EFF6FF', border: '1.5px solid #BFDBFE', cursor: 'pointer', textAlign: 'left' }
                         },
-                            React.createElement(Ico, { name: 'upload', size: 20, stroke: '#60a5fa' }),
+                            React.createElement(Ico, { name: 'upload', size: 20, stroke: '#3B82F6' }),
                             React.createElement('div', null,
-                                React.createElement('p', { className: 'font-bold text-blue-400' }, 'Загрузить из файла'),
-                                React.createElement('p', { className: 'text-xs mt-0.5', style: { color: 'rgba(255,255,255,0.4)' } }, 'Восстановить из резервной копии')
+                                React.createElement('p', { style: { fontWeight: 700, color: '#2563EB', fontSize: '0.9rem' } }, 'Загрузить из файла'),
+                                React.createElement('p', { style: { fontSize: '0.75rem', color: '#6B9FD4', marginTop: 2 } }, 'Восстановить из резервной копии')
                             )
                         ),
-                        React.createElement('input', { ref: fileRef, type: 'file', accept: '.json', onChange: upload, className: 'hidden' }),
-                        React.createElement('button', {
-                            onClick: reset,
-                            className: btnBase,
-                            style: { background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)' }
-                        },
-                            React.createElement(Ico, { name: 'trash', size: 20, stroke: '#f87171' }),
-                            React.createElement('div', null,
-                                React.createElement('p', { className: 'font-bold text-red-400' }, 'Сбросить всё'),
-                                React.createElement('p', { className: 'text-xs mt-0.5', style: { color: 'rgba(255,255,255,0.4)' } }, 'Удалить все записи безвозвратно')
-                            )
-                        )
+                        React.createElement('input', { ref: fileRef, type: 'file', accept: '.json', onChange: upload, style: { display: 'none' } })
                     ),
-                    React.createElement('p', { className: 'text-center text-xs mt-5', style: { color: 'rgba(255,255,255,0.25)' } },
+                    React.createElement('p', { style: { textAlign: 'center', fontSize: '0.72rem', color: '#9AB8A0', marginTop: 16 } },
                         transactions.length + ' записей сохранено')
                 )
             );
         }
 
         // ── Transaction Row ──
-        function TxRow({ t, onDelete }) {
+        function TxRow({ t, onDelete, onLight }) {
+            const isInc = t.type === 'income';
             return React.createElement('div', {
-                className: 'flex items-center justify-between py-3 border-b fade-in',
-                style: { borderColor: 'rgba(255,255,255,0.07)' }
+                style: {
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    paddingTop: 11, paddingBottom: 11,
+                    borderBottom: '1px solid ' + (onLight ? 'rgba(30,122,62,0.08)' : 'rgba(255,255,255,0.1)')
+                }
             },
-                React.createElement('div', { className: 'flex items-center gap-3 min-w-0' },
-                    React.createElement('div', {
-                        style: {
-                            width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
-                            background: t.type === 'income' ? '#A3E635' : '#fb923c'
-                        }
-                    }),
-                    React.createElement('div', { className: 'min-w-0' },
-                        React.createElement('p', { className: 'font-semibold text-sm truncate' }, t.category),
-                        React.createElement('p', { className: 'text-xs mt-0.5', style: { color: 'rgba(255,255,255,0.35)' } }, t.date)
+                React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 } },
+                    React.createElement('div', { style: {
+                        width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
+                        background: onLight ? (isInc ? '#1E7A3E' : '#E8560A') : 'rgba(255,255,255,0.6)'
+                    }}),
+                    React.createElement('div', { style: { minWidth: 0 } },
+                        React.createElement('p', { style: { fontWeight: 600, fontSize: '0.875rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, t.category),
+                        React.createElement('p', { style: { fontSize: '0.72rem', opacity: 0.45, marginTop: 2 } }, t.date)
                     )
                 ),
-                React.createElement('div', { className: 'flex items-center gap-2 flex-shrink-0 ml-3' },
-                    React.createElement('span', {
-                        className: 'font-black text-sm',
-                        style: { color: t.type === 'income' ? '#A3E635' : '#fb923c' }
-                    }, t.type === 'income' ? '+' : '−', fmt(t.amount), '\u00a0₽'),
+                React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, marginLeft: 8 } },
+                    React.createElement('span', { style: { fontWeight: 900, fontSize: '0.875rem', color: onLight ? (isInc ? '#1E7A3E' : '#E8560A') : 'rgba(255,255,255,0.9)' } },
+                        isInc ? '+' : '−', fmt(t.amount), '\u00a0₽'),
                     React.createElement('button', {
                         onClick: () => onDelete(t.id),
-                        style: { background: 'rgba(239,68,68,0.2)', padding: '6px', borderRadius: '10px', border: 'none', cursor: 'pointer', flexShrink: 0 }
-                    }, React.createElement(Ico, { name: 'trash', size: 14, stroke: '#f87171' }))
+                        style: { padding: 6, borderRadius: 9, border: 'none', cursor: 'pointer', flexShrink: 0, background: 'rgba(200,60,20,0.15)' }
+                    }, React.createElement(Ico, { name: 'trash', size: 13, stroke: onLight ? '#C44008' : 'rgba(255,200,180,0.9)' }))
                 )
             );
         }
@@ -337,7 +355,9 @@
 
             const deleteTx = useCallback((id) => setTransactions(prev => prev.filter(t => t.id !== id)), []);
 
-            const goToday = () => { setMonth(new Date().getMonth()); setYear(new Date().getFullYear()); };
+            const clearAll = () => {
+                if (confirm('Удалить все записи? Это нельзя отменить.')) setTransactions([]);
+            };
 
             const filtered = useMemo(() =>
                 transactions
@@ -359,44 +379,45 @@
             }, [transactions, year]);
 
             const mn = MONTHS[month];
+            const incFiltered = filtered.filter(t => t.type === 'income');
+            const expFiltered = filtered.filter(t => t.type === 'expense');
 
-            return React.createElement('div', { style: { maxWidth: 520, margin: '0 auto', padding: '20px 16px 60px' } },
+            return React.createElement('div', { style: { maxWidth: 520, margin: '0 auto', padding: '20px 14px 60px' } },
 
                 // ── Header ──
                 React.createElement('div', {
                     className: 'fade-up',
-                    style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }
+                    style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 22 }
                 },
                     React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 12 } },
-                        React.createElement('div', {
-                            style: { width: 44, height: 44, borderRadius: 14, background: 'rgba(163,230,53,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }
-                        }, React.createElement(Ico, { name: 'leaf', size: 22, stroke: '#A3E635' })),
+                        React.createElement('div', { style: { width: 46, height: 46, borderRadius: 14, background: 'rgba(30,122,62,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' } },
+                            React.createElement(Ico, { name: 'leaf', size: 24, stroke: '#1E7A3E' })),
                         React.createElement('div', null,
-                            React.createElement('h1', { className: 'font-serif', style: { fontSize: '1.25rem', fontWeight: 800, lineHeight: 1 } }, 'Зелёный Учёт'),
-                            React.createElement('p', { style: { fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.4)', marginTop: 3 } }, 'МАСТЕРСКАЯ ПО ОЗЕЛЕНЕНИЮ')
+                            React.createElement('h1', { className: 'font-serif', style: { fontSize: '1.3rem', fontWeight: 800, color: '#1A3C2A', lineHeight: 1 } }, 'Зелёный Учёт'),
+                            React.createElement('p', { style: { fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.1em', color: '#5A9A70', marginTop: 3 } }, 'МАСТЕРСКАЯ ПО ОЗЕЛЕНЕНИЮ')
                         )
                     ),
                     React.createElement('button', {
                         onClick: () => setShowSettings(true),
-                        style: { width: 44, height: 44, borderRadius: 14, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }
-                    }, React.createElement(Ico, { name: 'gear', size: 18, stroke: 'rgba(255,255,255,0.5)' }))
+                        style: { width: 44, height: 44, borderRadius: 13, background: 'white', border: '1.5px solid #C8E6C0', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 1px 4px rgba(30,90,40,0.08)' }
+                    }, React.createElement(Ico, { name: 'gear', size: 18, stroke: '#3A7A50' }))
                 ),
 
                 // ── Year + Month ──
                 React.createElement('div', {
-                    className: 'card-white fade-up',
-                    style: { padding: '20px', marginBottom: 16, animationDelay: '0.05s' }
+                    className: 'card-base card-surface fade-up',
+                    style: { animationDelay: '0.05s' }
                 },
-                    React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 } },
+                    React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 } },
                         React.createElement('button', {
                             onClick: () => setYear(y => y-1),
-                            style: { padding: '4px 8px', borderRadius: 8, background: 'rgba(255,255,255,0.08)', border: 'none', color: 'white', cursor: 'pointer', fontSize: '1rem' }
+                            style: { padding: '5px 10px', borderRadius: 9, background: '#F3FAF0', border: '1px solid #C8E6C0', color: '#1A3C2A', cursor: 'pointer', fontWeight: 700 }
                         }, '←'),
-                        React.createElement('span', { style: { fontWeight: 900, fontSize: '1.5rem', flex: 1 } }, year),
-                        React.createElement('button', { className: 'btn-today', onClick: goToday }, 'сегодня'),
+                        React.createElement('span', { style: { fontWeight: 900, fontSize: '1.5rem', color: '#1A3C2A', flex: 1 } }, year),
+                        React.createElement('button', { className: 'btn-today', onClick: () => { setMonth(new Date().getMonth()); setYear(new Date().getFullYear()); } }, 'сегодня'),
                         React.createElement('button', {
                             onClick: () => setYear(y => y+1),
-                            style: { padding: '4px 8px', borderRadius: 8, background: 'rgba(255,255,255,0.08)', border: 'none', color: 'white', cursor: 'pointer', fontSize: '1rem' }
+                            style: { padding: '5px 10px', borderRadius: 9, background: '#F3FAF0', border: '1px solid #C8E6C0', color: '#1A3C2A', cursor: 'pointer', fontWeight: 700 }
                         }, '→')
                     ),
                     React.createElement('div', { className: 'month-tabs' },
@@ -408,121 +429,123 @@
                 ),
 
                 // ── Income Card ──
-                React.createElement('div', {
-                    className: 'card-income fade-up',
-                    style: { padding: '24px', marginBottom: 16, animationDelay: '0.1s' }
-                },
-                    React.createElement('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 20 } },
+                React.createElement('div', { className: 'card-base card-income fade-up', style: { animationDelay: '0.1s' } },
+                    React.createElement('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 18 } },
                         React.createElement('div', null,
                             React.createElement('p', { className: 'field-label' }, 'Общий доход за ' + mn),
-                            React.createElement('p', { style: { fontSize: '2.5rem', fontWeight: 900, lineHeight: 1.1 } }, fmt(totals.inc), '\u00a0₽')
+                            React.createElement('p', { style: { fontSize: '2.4rem', fontWeight: 900, lineHeight: 1.1 } }, fmt(totals.inc), '\u00a0₽')
                         ),
-                        React.createElement(Ico, { name: 'trendUp', size: 28, stroke: '#A3E635' })
+                        React.createElement(Ico, { name: 'trendUp', size: 26, stroke: 'rgba(255,255,255,0.7)' })
                     ),
-                    React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
+                    React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 11 } },
                         React.createElement('div', null,
-                            React.createElement('p', { className: 'field-label' }, 'Сумма, ₽'),
+                            React.createElement('label', { className: 'field-label' }, 'Сумма, ₽'),
                             React.createElement('input', { type: 'number', placeholder: '0', value: incAmount, onChange: e => setIncAmount(e.target.value), onKeyDown: e => e.key==='Enter' && addTx('income'), className: 'field-input' })
                         ),
                         React.createElement('div', null,
-                            React.createElement('p', { className: 'field-label' }, 'Категория'),
+                            React.createElement('label', { className: 'field-label' }, 'Категория'),
                             React.createElement('select', { value: incCat, onChange: e => setIncCat(e.target.value), className: 'field-input' },
                                 INCOME_CATS.map(c => React.createElement('option', { key: c, value: c }, c)))
                         ),
                         React.createElement('div', null,
-                            React.createElement('p', { className: 'field-label' }, 'Примечание'),
+                            React.createElement('label', { className: 'field-label' }, 'Примечание'),
                             React.createElement('input', { type: 'text', placeholder: 'Название / Проект / Сад...', value: incNote, onChange: e => setIncNote(e.target.value), onKeyDown: e => e.key==='Enter' && addTx('income'), className: 'field-input' })
                         ),
                         React.createElement('button', {
-                            className: 'btn-add', onClick: () => addTx('income'),
-                            style: { background: '#A3E635', color: '#1A3C34' }
+                            className: 'btn-primary', onClick: () => addTx('income'),
+                            style: { background: '#8FD44A', color: '#1A3C2A' }
                         },
-                            React.createElement(Ico, { name: 'plus', size: 18, stroke: '#1A3C34' }),
+                            React.createElement(Ico, { name: 'plus', size: 18, stroke: '#1A3C2A' }),
                             'Добавить доход'
                         )
                     ),
-                    // Income history
-                    filtered.filter(t => t.type === 'income').length > 0 && React.createElement('div', { style: { marginTop: 20 } },
-                        React.createElement('p', { className: 'field-label', style: { marginBottom: 8 } }, 'История доходов (' + mn + ')'),
-                        filtered.filter(t => t.type === 'income').map(t => React.createElement(TxRow, { key: t.id, t, onDelete: deleteTx }))
+                    incFiltered.length > 0 && React.createElement('div', { style: { marginTop: 18 } },
+                        React.createElement('p', { className: 'field-label', style: { marginBottom: 4 } }, 'История доходов (' + mn + ')'),
+                        incFiltered.map(t => React.createElement(TxRow, { key: t.id, t, onDelete: deleteTx, onLight: false }))
                     )
                 ),
 
                 // ── Expense Card ──
-                React.createElement('div', {
-                    className: 'card-expense fade-up',
-                    style: { padding: '24px', marginBottom: 16, animationDelay: '0.15s' }
-                },
-                    React.createElement('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 20 } },
+                React.createElement('div', { className: 'card-base card-expense fade-up', style: { animationDelay: '0.15s' } },
+                    React.createElement('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 18 } },
                         React.createElement('div', null,
                             React.createElement('p', { className: 'field-label' }, 'Потрачено в ' + mn),
-                            React.createElement('p', { style: { fontSize: '2.5rem', fontWeight: 900, lineHeight: 1.1 } }, fmt(totals.exp), '\u00a0₽')
+                            React.createElement('p', { style: { fontSize: '2.4rem', fontWeight: 900, lineHeight: 1.1 } }, fmt(totals.exp), '\u00a0₽')
                         ),
-                        React.createElement(Ico, { name: 'trendDn', size: 28, stroke: 'rgba(255,255,255,0.6)' })
+                        React.createElement(Ico, { name: 'trendDn', size: 26, stroke: 'rgba(255,255,255,0.7)' })
                     ),
-                    React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
+                    React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 11 } },
                         React.createElement('div', null,
-                            React.createElement('p', { className: 'field-label' }, 'Сумма, ₽'),
+                            React.createElement('label', { className: 'field-label' }, 'Сумма, ₽'),
                             React.createElement('input', { type: 'number', placeholder: '0', value: expAmount, onChange: e => setExpAmount(e.target.value), onKeyDown: e => e.key==='Enter' && addTx('expense'), className: 'field-input' })
                         ),
                         React.createElement('div', null,
-                            React.createElement('p', { className: 'field-label' }, 'Категория'),
+                            React.createElement('label', { className: 'field-label' }, 'Категория'),
                             React.createElement('select', { value: expCat, onChange: e => setExpCat(e.target.value), className: 'field-input' },
                                 EXPENSE_CATS.map(c => React.createElement('option', { key: c, value: c }, c)))
                         ),
                         React.createElement('div', null,
-                            React.createElement('p', { className: 'field-label' }, 'Детали расхода'),
+                            React.createElement('label', { className: 'field-label' }, 'Детали расхода'),
                             React.createElement('input', { type: 'text', placeholder: 'За что именно...', value: expNote, onChange: e => setExpNote(e.target.value), onKeyDown: e => e.key==='Enter' && addTx('expense'), className: 'field-input' })
                         ),
                         React.createElement('button', {
-                            className: 'btn-add', onClick: () => addTx('expense'),
-                            style: { background: 'rgba(255,255,255,0.15)', color: 'white', border: '1px solid rgba(255,255,255,0.2)' }
+                            className: 'btn-primary', onClick: () => addTx('expense'),
+                            style: { background: 'rgba(255,255,255,0.18)', color: 'white', border: '1px solid rgba(255,255,255,0.25)' }
                         },
                             React.createElement(Ico, { name: 'plus', size: 18, stroke: 'white' }),
                             'Добавить расход'
                         )
                     ),
-                    // Expense history
-                    filtered.filter(t => t.type === 'expense').length > 0 && React.createElement('div', { style: { marginTop: 20 } },
-                        React.createElement('p', { className: 'field-label', style: { marginBottom: 8 } }, 'История трат (' + mn + ')'),
-                        filtered.filter(t => t.type === 'expense').map(t => React.createElement(TxRow, { key: t.id, t, onDelete: deleteTx }))
+                    expFiltered.length > 0 && React.createElement('div', { style: { marginTop: 18 } },
+                        React.createElement('p', { className: 'field-label', style: { marginBottom: 4 } }, 'История трат (' + mn + ')'),
+                        expFiltered.map(t => React.createElement(TxRow, { key: t.id, t, onDelete: deleteTx, onLight: false }))
                     )
                 ),
 
                 // ── Balance ──
                 React.createElement('div', {
-                    className: 'card-white fade-up',
-                    style: { padding: '20px 24px', marginBottom: 16, animationDelay: '0.2s' }
+                    className: 'card-base card-surface fade-up',
+                    style: { animationDelay: '0.2s' }
                 },
-                    React.createElement('p', { className: 'field-label' }, 'Остаток за ' + mn),
-                    React.createElement('p', { style: { fontSize: '2rem', fontWeight: 900, color: totals.bal >= 0 ? '#A3E635' : '#f87171' } },
+                    React.createElement('p', { style: { fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase', color: '#6A9A7A', marginBottom: 6 } }, 'Остаток за ' + mn),
+                    React.createElement('p', { style: { fontSize: '2rem', fontWeight: 900, color: totals.bal >= 0 ? '#1E7A3E' : '#C44008' } },
                         totals.bal < 0 ? '−' : '', fmt(totals.bal), '\u00a0₽')
                 ),
 
                 // ── Annual Report ──
                 React.createElement('div', {
-                    className: 'card-white fade-up',
-                    style: { padding: '20px 24px', animationDelay: '0.25s' }
+                    className: 'card-base card-surface fade-up',
+                    style: { animationDelay: '0.25s' }
                 },
                     React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 } },
-                        React.createElement(Ico, { name: 'scale', size: 16, stroke: '#A3E635' }),
-                        React.createElement('p', { className: 'field-label', style: { margin: 0 } }, 'Годовой отчёт ' + year)
+                        React.createElement(Ico, { name: 'scale', size: 16, stroke: '#1E7A3E' }),
+                        React.createElement('p', { style: { fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase', color: '#6A9A7A' } }, 'Годовой отчёт ' + year)
                     ),
                     React.createElement('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, textAlign: 'center' } },
-                        React.createElement('div', null,
-                            React.createElement('p', { className: 'field-label' }, 'Доходы'),
-                            React.createElement('p', { style: { fontWeight: 900, color: '#A3E635' } }, fmt(annual.inc), '\u00a0₽')
+                        React.createElement('div', { style: { background: '#F0FBF0', borderRadius: 12, padding: '12px 8px' } },
+                            React.createElement('p', { style: { fontSize: '0.62rem', fontWeight: 700, color: '#5A9A70', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 4 } }, 'Доходы'),
+                            React.createElement('p', { style: { fontWeight: 900, color: '#1E7A3E', fontSize: '0.95rem' } }, fmt(annual.inc), '\u00a0₽')
                         ),
-                        React.createElement('div', null,
-                            React.createElement('p', { className: 'field-label' }, 'Расходы'),
-                            React.createElement('p', { style: { fontWeight: 900, color: '#fb923c' } }, fmt(annual.exp), '\u00a0₽')
+                        React.createElement('div', { style: { background: '#FFF5F0', borderRadius: 12, padding: '12px 8px' } },
+                            React.createElement('p', { style: { fontSize: '0.62rem', fontWeight: 700, color: '#B06040', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 4 } }, 'Расходы'),
+                            React.createElement('p', { style: { fontWeight: 900, color: '#E8560A', fontSize: '0.95rem' } }, fmt(annual.exp), '\u00a0₽')
                         ),
-                        React.createElement('div', null,
-                            React.createElement('p', { className: 'field-label' }, 'Итого'),
-                            React.createElement('p', { style: { fontWeight: 900, color: annual.bal >= 0 ? 'white' : '#f87171' } },
+                        React.createElement('div', { style: { background: annual.bal >= 0 ? '#F0FBF0' : '#FFF5F0', borderRadius: 12, padding: '12px 8px' } },
+                            React.createElement('p', { style: { fontSize: '0.62rem', fontWeight: 700, color: '#7A9A80', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 4 } }, 'Итого'),
+                            React.createElement('p', { style: { fontWeight: 900, color: annual.bal >= 0 ? '#1E7A3E' : '#C44008', fontSize: '0.95rem' } },
                                 annual.bal < 0 ? '−' : '', fmt(annual.bal), '\u00a0₽')
                         )
                     )
+                ),
+
+                // ── Clear Button ──
+                React.createElement('button', {
+                    className: 'btn-clear fade-up',
+                    style: { animationDelay: '0.3s' },
+                    onClick: clearAll
+                },
+                    React.createElement(Ico, { name: 'trash', size: 16, stroke: '#C44008' }),
+                    'Очистить данные'
                 ),
 
                 // ── Settings Modal ──
