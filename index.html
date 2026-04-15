@@ -350,9 +350,11 @@
             const [incAmount, setIncAmount] = useState('');
             const [incCat,    setIncCat]    = useState(INCOME_CATS[0]);
             const [incNote,   setIncNote]   = useState('');
+            const [incDate,   setIncDate]   = useState(() => new Date().toISOString().slice(0,10));
             const [expAmount, setExpAmount] = useState('');
             const [expCat,    setExpCat]    = useState(EXPENSE_CATS[0]);
             const [expNote,   setExpNote]   = useState('');
+            const [expDate,   setExpDate]   = useState(() => new Date().toISOString().slice(0,10));
             const [showSettings, setShowSettings] = useState(false);
             const [toast, setToast] = useState(null);
 
@@ -366,10 +368,10 @@
             const addTx = useCallback((type) => {
                 const amount = parseFloat(type === 'income' ? incAmount : expAmount);
                 if (isNaN(amount) || amount <= 0) return;
-                const cat  = type === 'income' ? incCat  : expCat;
-                const note = type === 'income' ? incNote : expNote;
-                const now  = new Date();
-                const d    = new Date(year, month, now.getDate(), now.getHours(), now.getMinutes());
+                const cat      = type === 'income' ? incCat  : expCat;
+                const note     = type === 'income' ? incNote : expNote;
+                const dateStr  = type === 'income' ? incDate : expDate;
+                const d        = dateStr ? new Date(dateStr + 'T12:00:00') : new Date();
                 setTransactions(prev => [{
                     id: Date.now().toString(36) + Math.random().toString(36).slice(2),
                     amount, type,
@@ -380,6 +382,7 @@
                 showToast(type, amount);
                 if (type === 'income') { setIncAmount(''); setIncNote(''); }
                 else                   { setExpAmount(''); setExpNote(''); }
+                // дату не сбрасываем — обычно следующая запись того же дня
             }, [incAmount, expAmount, incCat, expCat, incNote, expNote, year, month]);
 
             const deleteTx = useCallback((id) => setTransactions(prev => prev.filter(t => t.id !== id)), []);
@@ -480,6 +483,10 @@
                             React.createElement('label', { className: 'field-label' }, 'Примечание'),
                             React.createElement('input', { type: 'text', placeholder: 'Название / Проект / Сад...', value: incNote, onChange: e => setIncNote(e.target.value), onKeyDown: e => e.key==='Enter' && addTx('income'), className: 'field-input' })
                         ),
+                        React.createElement('div', null,
+                            React.createElement('label', { className: 'field-label' }, 'Дата'),
+                            React.createElement('input', { type: 'date', value: incDate, onChange: e => setIncDate(e.target.value), className: 'field-input', style: { colorScheme: 'dark' } })
+                        ),
                         React.createElement('button', {
                             className: 'btn-primary', onClick: () => addTx('income'),
                             style: { background: '#8FD44A', color: '#1A3C2A' }
@@ -518,6 +525,10 @@
                         React.createElement('div', null,
                             React.createElement('label', { className: 'field-label' }, 'Детали расхода'),
                             React.createElement('input', { type: 'text', placeholder: 'За что именно...', value: expNote, onChange: e => setExpNote(e.target.value), onKeyDown: e => e.key==='Enter' && addTx('expense'), className: 'field-input' })
+                        ),
+                        React.createElement('div', null,
+                            React.createElement('label', { className: 'field-label' }, 'Дата'),
+                            React.createElement('input', { type: 'date', value: expDate, onChange: e => setExpDate(e.target.value), className: 'field-input', style: { colorScheme: 'dark' } })
                         ),
                         React.createElement('button', {
                             className: 'btn-primary', onClick: () => addTx('expense'),
