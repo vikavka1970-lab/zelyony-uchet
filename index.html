@@ -350,6 +350,36 @@
             );
         }
 
+        // ── Category Summary ──
+        function CategorySummary({ items }) {
+            const byCategory = useMemo(() => {
+                const map = {};
+                items.forEach(t => {
+                    // берём базовую категорию без примечания в скобках
+                    const base = t.category.replace(/\s*\(.*\)$/, '');
+                    map[base] = (map[base] || 0) + t.amount;
+                });
+                return Object.entries(map).sort((a, b) => b[1] - a[1]);
+            }, [items]);
+
+            if (byCategory.length <= 1) return null;
+
+            return React.createElement('div', {
+                style: { marginTop: 12, padding: '12px 0 0', borderTop: '1px solid rgba(255,255,255,0.12)' }
+            },
+                React.createElement('p', { className: 'field-label', style: { marginBottom: 8 } }, 'По категориям'),
+                byCategory.map(([cat, sum]) =>
+                    React.createElement('div', {
+                        key: cat,
+                        style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 6 }
+                    },
+                        React.createElement('p', { style: { fontSize: '0.8rem', opacity: 0.75 } }, cat),
+                        React.createElement('p', { style: { fontSize: '0.8rem', fontWeight: 800, opacity: 0.9 } }, fmt(sum), '\u00a0₽')
+                    )
+                )
+            );
+        }
+
         // ── App ──
         function App() {
             const [transactions, setTransactions] = useState(() => {
@@ -509,7 +539,10 @@
                         React.createElement('p', { className: 'field-label', style: { marginBottom: 8 } }, 'История поступлений (' + mn + ')'),
                         incFiltered.length === 0
                             ? React.createElement('p', { style: { fontSize: '0.82rem', opacity: 0.4, fontStyle: 'italic' } }, 'Доходов за этот месяц нет')
-                            : incFiltered.map(t => React.createElement(TxRow, { key: t.id, t, onDelete: deleteTx, onLight: false }))
+                            : [
+                                ...incFiltered.map(t => React.createElement(TxRow, { key: t.id, t, onDelete: deleteTx, onLight: false })),
+                                incFiltered.length > 1 && React.createElement(CategorySummary, { key: 'inc-summary', items: incFiltered })
+                              ]
                     )
                 ),
 
@@ -552,7 +585,10 @@
                         React.createElement('p', { className: 'field-label', style: { marginBottom: 8 } }, 'История трат (' + mn + ')'),
                         expFiltered.length === 0
                             ? React.createElement('p', { style: { fontSize: '0.82rem', opacity: 0.4, fontStyle: 'italic' } }, 'Расходов за этот месяц нет')
-                            : expFiltered.map(t => React.createElement(TxRow, { key: t.id, t, onDelete: deleteTx, onLight: false }))
+                            : [
+                                ...expFiltered.map(t => React.createElement(TxRow, { key: t.id, t, onDelete: deleteTx, onLight: false })),
+                                expFiltered.length > 1 && React.createElement(CategorySummary, { key: 'exp-summary', items: expFiltered })
+                              ]
                     )
                 ),
 
