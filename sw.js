@@ -1,4 +1,4 @@
-const CACHE = 'zelyony-uchet-v1';
+const CACHE = 'zelyony-uchet-v2';
 const ASSETS = [
   '/zelyony-uchet/',
   '/zelyony-uchet/index.html'
