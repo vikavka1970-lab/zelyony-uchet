@@ -8,6 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Зелёный Учёт">
     <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/240/leaf.png">
+    <link rel="icon" href="https://img.icons8.com/fluency/48/leaf.png" type="image/png">
     <title>Зелёный Учёт</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -198,6 +199,7 @@
         }
         .toast-income { background: #1E7A3E; color: white; }
         .toast-expense { background: #E8560A; color: white; }
+        .toast-delete { background: #64748B; color: white; }
     </style>
 </head>
 <body>
@@ -343,7 +345,7 @@
                     }}),
                     React.createElement('div', { style: { minWidth: 0 } },
                         React.createElement('p', { style: { fontWeight: 600, fontSize: '0.875rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, t.category),
-                        React.createElement('p', { style: { fontSize: '0.72rem', opacity: 0.45, marginTop: 2 } }, t.date)
+                        React.createElement('p', { style: { fontSize: '0.72rem', opacity: 0.65, marginTop: 2 } }, t.date)
                     )
                 ),
                 React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, marginLeft: 8 } },
@@ -442,6 +444,8 @@
             const [expCustomInput, setExpCustomInput] = useState('');
             const [showIncCustom, setShowIncCustom] = useState(false);
             const [showExpCustom, setShowExpCustom] = useState(false);
+            const [showIncForm, setShowIncForm] = useState(false);
+            const [showExpForm, setShowExpForm] = useState(false);
 
             useEffect(() => { localStorage.setItem('custom_inc_cats', JSON.stringify(customIncCats)); }, [customIncCats]);
             useEffect(() => { localStorage.setItem('custom_exp_cats', JSON.stringify(customExpCats)); }, [customExpCats]);
@@ -490,7 +494,12 @@
                 // дату не сбрасываем — обычно следующая запись того же дня
             }, [incAmount, expAmount, incCat, expCat, incNote, expNote, year, month]);
 
-            const deleteTx = useCallback((id) => setTransactions(prev => prev.filter(t => t.id !== id)), []);
+            const deleteTx = useCallback((id) => {
+                if (!confirm('Удалить эту запись?')) return;
+                setTransactions(prev => prev.filter(t => t.id !== id));
+                setToast({ type: 'delete', amount: 0 });
+                setTimeout(() => setToast(null), 2000);
+            }, []);
 
             const clearAll = () => {
                 if (confirm('Удалить все записи? Это нельзя отменить.')) setTransactions([]);
@@ -581,16 +590,45 @@
                     )
                 ),
 
+                // ── Balance ──
+                React.createElement('div', {
+                    className: 'card-base card-surface fade-up',
+                    style: { animationDelay: '0.1s', borderLeft: '4px solid #1E7A3E', background: '#F7FDF7' }
+                },
+                    React.createElement('p', { style: { fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase', color: '#1E7A3E', marginBottom: 12 } }, 'Итоги за ' + mn),
+                    React.createElement('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 } },
+                        React.createElement('div', { style: { background: '#F0FBF0', borderRadius: 12, padding: '12px 14px' } },
+                            React.createElement('p', { style: { fontSize: '0.62rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#5A9A70', marginBottom: 4 } }, 'Доходы'),
+                            React.createElement('p', { style: { fontWeight: 900, fontSize: '1.1rem', color: '#1E7A3E' } }, fmt(totals.inc), '\u00a0₽')
+                        ),
+                        React.createElement('div', { style: { background: '#FFF5F0', borderRadius: 12, padding: '12px 14px' } },
+                            React.createElement('p', { style: { fontSize: '0.62rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#B06040', marginBottom: 4 } }, 'Расходы'),
+                            React.createElement('p', { style: { fontWeight: 900, fontSize: '1.1rem', color: '#E8560A' } }, fmt(totals.exp), '\u00a0₽')
+                        )
+                    ),
+                    React.createElement('div', { style: { borderTop: '1px solid #E8F0E8', paddingTop: 12 } },
+                        React.createElement('p', { style: { fontSize: '0.62rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#6A9A7A', marginBottom: 4 } }, 'Остаток'),
+                        React.createElement('p', { style: { fontSize: '2rem', fontWeight: 900, color: totals.bal >= 0 ? '#1E7A3E' : '#C44008' } },
+                            totals.bal < 0 ? '−' : '', fmt(totals.bal), '\u00a0₽')
+                    )
+                ),
+
                 // ── Income Card ──
-                React.createElement('div', { className: 'card-base card-income fade-up', style: { animationDelay: '0.1s' } },
-                    React.createElement('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 18 } },
+                React.createElement('div', { className: 'card-base card-income fade-up', style: { animationDelay: '0.15s' } },
+                    React.createElement('div', {
+                        style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: showIncForm ? 18 : 0, cursor: 'pointer' },
+                        onClick: () => setShowIncForm(v => !v)
+                    },
                         React.createElement('div', null,
                             React.createElement('p', { className: 'field-label' }, 'Общий доход за ' + mn),
                             React.createElement('p', { style: { fontSize: '2.4rem', fontWeight: 900, lineHeight: 1.1 } }, fmt(totals.inc), '\u00a0₽')
                         ),
-                        React.createElement(Ico, { name: 'trendUp', size: 26, stroke: 'rgba(255,255,255,0.7)' })
+                        React.createElement('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 } },
+                            React.createElement(Ico, { name: 'trendUp', size: 26, stroke: 'rgba(255,255,255,0.7)' }),
+                            React.createElement('span', { style: { fontSize: '0.6rem', fontWeight: 700, opacity: 0.6, letterSpacing: '0.05em' } }, showIncForm ? 'свернуть' : '＋ внести')
+                        )
                     ),
-                    React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 11 } },
+                    showIncForm && React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 11 } },
                         React.createElement('div', null,
                             React.createElement('label', { className: 'field-label' }, 'Сумма, ₽'),
                             React.createElement('input', { type: 'number', placeholder: '0', value: incAmount, onChange: e => setIncAmount(e.target.value), onKeyDown: e => e.key==='Enter' && addTx('income'), className: 'field-input' })
@@ -660,14 +698,20 @@
 
                 // ── Expense Card ──
                 React.createElement('div', { className: 'card-base card-expense fade-up', style: { animationDelay: '0.15s' } },
-                    React.createElement('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 18 } },
+                    React.createElement('div', {
+                        style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: showExpForm ? 18 : 0, cursor: 'pointer' },
+                        onClick: () => setShowExpForm(v => !v)
+                    },
                         React.createElement('div', null,
                             React.createElement('p', { className: 'field-label' }, 'Потрачено в ' + mn),
                             React.createElement('p', { style: { fontSize: '2.4rem', fontWeight: 900, lineHeight: 1.1 } }, fmt(totals.exp), '\u00a0₽')
                         ),
-                        React.createElement(Ico, { name: 'trendDn', size: 26, stroke: 'rgba(255,255,255,0.7)' })
+                        React.createElement('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 } },
+                            React.createElement(Ico, { name: 'trendDn', size: 26, stroke: 'rgba(255,255,255,0.7)' }),
+                            React.createElement('span', { style: { fontSize: '0.6rem', fontWeight: 700, opacity: 0.6, letterSpacing: '0.05em' } }, showExpForm ? 'свернуть' : '＋ внести')
+                        )
                     ),
-                    React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 11 } },
+                    showExpForm && React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 11 } },
                         React.createElement('div', null,
                             React.createElement('label', { className: 'field-label' }, 'Сумма, ₽'),
                             React.createElement('input', { type: 'number', placeholder: '0', value: expAmount, onChange: e => setExpAmount(e.target.value), onKeyDown: e => e.key==='Enter' && addTx('expense'), className: 'field-input' })
@@ -725,36 +769,13 @@
                             className: 'field-input', style: { marginBottom: 10, padding: '9px 13px', fontSize: '0.85rem' }
                         }),
                         expFiltered.length === 0
-                            ? React.createElement('p', { style: { fontSize: '0.82rem', opacity: 0.4, fontStyle: 'italic' } }, 'Расходов за этот месяца нет')
+                            ? React.createElement('p', { style: { fontSize: '0.82rem', opacity: 0.4, fontStyle: 'italic' } }, 'Расходов за этот месяц нет')
                             : expSearched.length === 0
                                 ? React.createElement('p', { style: { fontSize: '0.82rem', opacity: 0.4, fontStyle: 'italic' } }, 'Ничего не найдено')
                                 : [
                                     ...expSearched.map(t => React.createElement(TxRow, { key: t.id, t, onDelete: deleteTx, onLight: false })),
                                     expSearched.length > 1 && React.createElement(CategorySummary, { key: 'exp-summary', items: expSearched })
                                   ]
-                    )
-                ),
-
-                // ── Balance ──
-                React.createElement('div', {
-                    className: 'card-base card-surface fade-up',
-                    style: { animationDelay: '0.2s', borderLeft: '4px solid #1E7A3E', background: '#F7FDF7' }
-                },
-                    React.createElement('p', { style: { fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase', color: '#1E7A3E', marginBottom: 12 } }, 'Итоги за ' + mn),
-                    React.createElement('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 } },
-                        React.createElement('div', { style: { background: '#F0FBF0', borderRadius: 12, padding: '12px 14px' } },
-                            React.createElement('p', { style: { fontSize: '0.62rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#5A9A70', marginBottom: 4 } }, 'Доходы'),
-                            React.createElement('p', { style: { fontWeight: 900, fontSize: '1.1rem', color: '#1E7A3E' } }, fmt(totals.inc), '\u00a0₽')
-                        ),
-                        React.createElement('div', { style: { background: '#FFF5F0', borderRadius: 12, padding: '12px 14px' } },
-                            React.createElement('p', { style: { fontSize: '0.62rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#B06040', marginBottom: 4 } }, 'Расходы'),
-                            React.createElement('p', { style: { fontWeight: 900, fontSize: '1.1rem', color: '#E8560A' } }, fmt(totals.exp), '\u00a0₽')
-                        )
-                    ),
-                    React.createElement('div', { style: { borderTop: '1px solid #E8F0E8', paddingTop: 12 } },
-                        React.createElement('p', { style: { fontSize: '0.62rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#6A9A7A', marginBottom: 4 } }, 'Остаток'),
-                        React.createElement('p', { style: { fontSize: '2rem', fontWeight: 900, color: totals.bal >= 0 ? '#1E7A3E' : '#C44008' } },
-                            totals.bal < 0 ? '−' : '', fmt(totals.bal), '\u00a0₽')
                     )
                 ),
 
@@ -818,10 +839,11 @@
                 // ── Toast ──
                 toast && React.createElement('div', {
                     key: toast.amount + toast.type,
-                    className: 'toast ' + (toast.type === 'income' ? 'toast-income' : 'toast-expense')
+                    className: 'toast ' + (toast.type === 'income' ? 'toast-income' : toast.type === 'expense' ? 'toast-expense' : 'toast-delete')
                 },
-                    toast.type === 'income' ? '✓ Доход добавлен: +' : '✓ Расход добавлен: −',
-                    fmt(toast.amount), '\u00a0₽'
+                    toast.type === 'income' ? '✓ Доход добавлен: +' + fmt(toast.amount) + '\u00a0₽' :
+                    toast.type === 'expense' ? '✓ Расход добавлен: −' + fmt(toast.amount) + '\u00a0₽' :
+                    '✓ Запись удалена'
                 )
             );
         }
