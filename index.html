@@ -63,6 +63,11 @@
             color: white;
             box-shadow: 0 4px 24px rgba(232,86,10,0.30);
         }
+        .card-mileage {
+            background: linear-gradient(135deg, #155E75 0%, #0C4A6E 100%);
+            color: white;
+            box-shadow: 0 4px 24px rgba(21,94,117,0.35);
+        }
 
         /* Inputs */
         .field-label {
@@ -202,6 +207,7 @@
         .toast-income { background: #1E7A3E; color: white; }
         .toast-expense { background: #E8560A; color: white; }
         .toast-delete { background: #64748B; color: white; }
+        .toast-mileage { background: #155E75; color: white; }
     </style>
 </head>
 <body>
@@ -241,7 +247,8 @@
             chevR:    "M9 18l6-6-6-6",
             trendUp:  "M23 6l-9.5 9.5-5-5L1 18M17 6h6v6",
             trendDn:  "M23 18l-9.5-9.5-5 5L1 6M17 18h6v-6",
-            scale:    "M12 3v18M3 7h2c2 0 4-1 7-1s5 1 7 1h2M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1z",
+            scale:     "M12 3v18M3 7h2c2 0 4-1 7-1s5 1 7 1h2M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1z",
+            milestone: "M12 2v20M2 7h14l4 5-4 5H2z",
         };
         const Ico = ({ name, size = 20, stroke = "currentColor" }) =>
             React.createElement('svg', {
@@ -448,9 +455,17 @@
             const [showExpCustom, setShowExpCustom] = useState(false);
             const [showIncForm, setShowIncForm] = useState(false);
             const [showExpForm, setShowExpForm] = useState(false);
+            const [mileage, setMileage] = useState(() => {
+                try { return JSON.parse(localStorage.getItem('mileage_log')) || []; } catch { return []; }
+            });
+            const [kmAmount, setKmAmount] = useState('');
+            const [kmNote,   setKmNote]   = useState('');
+            const [kmDate,   setKmDate]   = useState(() => new Date().toISOString().slice(0,10));
+            const [showKmForm, setShowKmForm] = useState(false);
 
             useEffect(() => { localStorage.setItem('custom_inc_cats', JSON.stringify(customIncCats)); }, [customIncCats]);
             useEffect(() => { localStorage.setItem('custom_exp_cats', JSON.stringify(customExpCats)); }, [customExpCats]);
+            useEffect(() => { localStorage.setItem('mileage_log', JSON.stringify(mileage)); }, [mileage]);
 
             const addCustomCat = (type) => {
                 const val = type === 'income' ? incCustomInput.trim() : expCustomInput.trim();
@@ -467,6 +482,29 @@
                     setShowExpCustom(false);
                 }
             };
+            const addKm = useCallback(() => {
+                const km = parseFloat(kmAmount);
+                if (isNaN(km) || km <= 0) return;
+                const d = kmDate ? new Date(kmDate + 'T12:00:00') : new Date();
+                setMileage(prev => [{
+                    id: Date.now().toString(36) + Math.random().toString(36).slice(2),
+                    km,
+                    note: kmNote.trim(),
+                    date: d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+                    timestamp: d.getTime()
+                }, ...prev]);
+                showToast('mileage', km);
+                setKmAmount('');
+                setKmNote('');
+            }, [kmAmount, kmNote, kmDate]);
+
+            const deleteKm = useCallback((id) => {
+                if (!confirm('Удалить запись?')) return;
+                setMileage(prev => prev.filter(t => t.id !== id));
+                setToast({ type: 'delete', amount: 0 });
+                setTimeout(() => setToast(null), 2000);
+            }, []);
+
             const [toast, setToast] = useState(null);
 
             const showToast = (type, amount) => {
@@ -531,6 +569,24 @@
                 });
                 return { inc, exp, bal: inc - exp, byMonth };
             }, [transactions, year]);
+
+            const filteredKm = useMemo(() =>
+                mileage
+                    .filter(t => { const d = new Date(t.timestamp); return d.getMonth() === month && d.getFullYear() === year; })
+                    .sort((a, b) => b.timestamp - a.timestamp)
+            , [mileage, month, year]);
+
+            const totalKm = useMemo(() => filteredKm.reduce((s, t) => s + t.km, 0), [filteredKm]);
+
+            const kmByDay = useMemo(() => {
+                const map = {};
+                filteredKm.forEach(t => {
+                    if (!map[t.date]) map[t.date] = { date: t.date, timestamp: t.timestamp, items: [], total: 0 };
+                    map[t.date].items.push(t);
+                    map[t.date].total += t.km;
+                });
+                return Object.values(map).sort((a, b) => b.timestamp - a.timestamp);
+            }, [filteredKm]);
 
             const mn = MONTHS[month];
             const incFiltered = filtered.filter(t => t.type === 'income');
@@ -781,6 +837,79 @@
                     )
                 ),
 
+                // ── Mileage Card ──
+                React.createElement('div', { className: 'card-base card-mileage fade-up', style: { animationDelay: '0.2s' } },
+                    React.createElement('div', {
+                        style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: showKmForm ? 18 : 0, cursor: 'pointer' },
+                        onClick: () => setShowKmForm(v => !v)
+                    },
+                        React.createElement('div', null,
+                            React.createElement('p', { className: 'field-label' }, 'Километраж за ' + mn),
+                            React.createElement('p', { style: { fontSize: '2.4rem', fontWeight: 900, lineHeight: 1.1 } }, totalKm.toLocaleString('ru-RU'), ' км')
+                        ),
+                        React.createElement('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 } },
+                            React.createElement(Ico, { name: 'milestone', size: 26, stroke: 'rgba(255,255,255,0.7)' }),
+                            React.createElement('span', { style: { fontSize: '0.6rem', fontWeight: 700, opacity: 0.6, letterSpacing: '0.05em' } }, showKmForm ? 'свернуть' : '＋ внести')
+                        )
+                    ),
+                    showKmForm && React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 11 } },
+                        React.createElement('div', null,
+                            React.createElement('label', { className: 'field-label' }, 'Километры'),
+                            React.createElement('input', { type: 'number', placeholder: '0', value: kmAmount, onChange: e => setKmAmount(e.target.value), onKeyDown: e => e.key === 'Enter' && addKm(), className: 'field-input' })
+                        ),
+                        React.createElement('div', null,
+                            React.createElement('label', { className: 'field-label' }, 'Маршрут / Примечание'),
+                            React.createElement('input', { type: 'text', placeholder: 'Откуда → Куда...', value: kmNote, onChange: e => setKmNote(e.target.value), onKeyDown: e => e.key === 'Enter' && addKm(), className: 'field-input' })
+                        ),
+                        React.createElement('div', null,
+                            React.createElement('label', { className: 'field-label' }, 'Дата'),
+                            React.createElement(DatePicker, { value: kmDate, onChange: e => setKmDate(e.target.value) })
+                        ),
+                        React.createElement('button', {
+                            className: 'btn-primary', onClick: addKm,
+                            style: { background: 'rgba(255,255,255,0.18)', color: 'white', border: '1.5px solid rgba(255,255,255,0.3)' }
+                        },
+                            React.createElement(Ico, { name: 'plus', size: 18, stroke: 'white' }),
+                            'Добавить поездку'
+                        )
+                    ),
+                    React.createElement('div', { style: { marginTop: 20, borderTop: '1px solid rgba(255,255,255,0.15)', paddingTop: 16 } },
+                        React.createElement('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 } },
+                            React.createElement('p', { className: 'field-label', style: { margin: 0 } }, 'По дням (' + mn + ')'),
+                            React.createElement('span', { style: { fontSize: '0.72rem', opacity: 0.45 } }, filteredKm.length + ' поездок')
+                        ),
+                        filteredKm.length === 0
+                            ? React.createElement('p', { style: { fontSize: '0.82rem', opacity: 0.4, fontStyle: 'italic' } }, 'Поездок за этот месяц нет')
+                            : kmByDay.map(day =>
+                                React.createElement('div', { key: day.date, style: { marginBottom: 10 } },
+                                    React.createElement('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 6, marginBottom: 2, borderBottom: '1px solid rgba(255,255,255,0.2)' } },
+                                        React.createElement('span', { style: { fontSize: '0.78rem', fontWeight: 700, opacity: 0.85 } }, day.date),
+                                        React.createElement('span', { style: { fontSize: '0.9rem', fontWeight: 900 } }, day.total.toLocaleString('ru-RU'), ' км')
+                                    ),
+                                    day.items.map(t =>
+                                        React.createElement('div', { key: t.id,
+                                            style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.06)' }
+                                        },
+                                            React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 } },
+                                                React.createElement('div', { style: { width: 6, height: 6, borderRadius: '50%', background: 'rgba(255,255,255,0.4)', flexShrink: 0 } }),
+                                                React.createElement('span', { style: { fontSize: '0.82rem', opacity: 0.75, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } },
+                                                    t.note || 'Поездка'
+                                                )
+                                            ),
+                                            React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, marginLeft: 8 } },
+                                                React.createElement('span', { style: { fontWeight: 700, fontSize: '0.875rem' } }, t.km.toLocaleString('ru-RU'), ' км'),
+                                                React.createElement('button', {
+                                                    onClick: () => deleteKm(t.id),
+                                                    style: { padding: 6, borderRadius: 9, border: 'none', cursor: 'pointer', flexShrink: 0, background: 'rgba(200,60,20,0.2)' }
+                                                }, React.createElement(Ico, { name: 'trash', size: 13, stroke: 'rgba(255,200,180,0.9)' }))
+                                            )
+                                        )
+                                    )
+                                )
+                            )
+                    )
+                ),
+
                 // ── Annual Report ──
                 React.createElement('div', {
                     className: 'card-base card-surface fade-up',
@@ -841,10 +970,11 @@
                 // ── Toast ──
                 toast && React.createElement('div', {
                     key: toast.amount + toast.type,
-                    className: 'toast ' + (toast.type === 'income' ? 'toast-income' : toast.type === 'expense' ? 'toast-expense' : 'toast-delete')
+                    className: 'toast ' + (toast.type === 'income' ? 'toast-income' : toast.type === 'expense' ? 'toast-expense' : toast.type === 'mileage' ? 'toast-mileage' : 'toast-delete')
                 },
                     toast.type === 'income' ? '✓ Доход добавлен: +' + fmt(toast.amount) + '\u00a0₽' :
                     toast.type === 'expense' ? '✓ Расход добавлен: −' + fmt(toast.amount) + '\u00a0₽' :
+                    toast.type === 'mileage' ? '✓ Поездка: ' + toast.amount.toLocaleString('ru-RU') + ' км' :
                     '✓ Запись удалена'
                 )
             );
